@@ -3,8 +3,8 @@ type: audit-note
 project: Uniswap ERC20ETH
 severity: Informational
 tags: 
-  - floating pragma
-  - incomplete Docstrings
+- floating pragma
+- incomplete Docstrings
 date: 2026-05-14
 status: completed
 ---
