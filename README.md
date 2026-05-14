@@ -7,8 +7,11 @@ My personal notes for smart contract audit learning.
 - `/medium` - Medium severity vulnerabilities
 
 ## Progress
-- 2026-05-12: Created repository, starting with zero-address check.
+- 2026-05-12: Created repository, start learning.
+- 2026-05-14: finshed Uniswap-ERC20ETH-audit-notes.
 
+- Total numbers of notes:  3
+- Current stage： First stage(Zero business logic vulnerabilities)
 
 
 ---
@@ -49,3 +52,4 @@ status: [in-progress/completed]
 
 // Fixed
 [修复代码]
+```
