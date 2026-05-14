@@ -38,7 +38,7 @@ pragma solidity ^0.8.13;
 
 // Fixed
 pragma solidity 0.8.13;
-
+```
 
 ## L-02: Incomplete Docstrings
 
@@ -76,3 +76,4 @@ The completed docstrings help us understand the code more clearly.
 /// @return the amount of tokens in existence.
 /// @param account The address to query the balance for
 function balanceOf(address account) public pure override returns (uint256)
+```
