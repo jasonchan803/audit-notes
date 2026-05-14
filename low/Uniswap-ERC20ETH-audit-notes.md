@@ -1,15 +1,15 @@
 ---
 type: audit-note
-project: [Uniswap ERC20ETH]
-severity: [Informational]
-tags: [floating pragma, incomplete Docstrings]
+project: Uniswap ERC20ETH
+severity: Informational
+tags: floating pragma, incomplete Docstrings
 date: 2026-05-14
-status: [completed]
+status: completed
 ---
 
 ## L-01: Floating Pragma
 
-**Severity**: [Informational]
+**Severity**: Informational
 
 **Location**: `ERC20Eth.sol:2`
 
