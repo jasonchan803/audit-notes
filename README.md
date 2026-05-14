@@ -10,8 +10,8 @@ My personal notes for smart contract audit learning.
 - 2026-05-12: Created repository, start learning.
 - 2026-05-14: finshed Uniswap-ERC20ETH-audit-notes.
 
-## Total numbers of notes:  2
-## Current stage： First stage(Zero business logic vulnerabilities)
+## Total numbers of notes：2
+## Current stage：First stage(Zero business logic vulnerabilities)
 
 
 ---
