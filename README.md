@@ -10,26 +10,42 @@ My personal notes for smart contract audit learning.
 - 2026-05-12: Created repository, starting with zero-address check.
 
 
-# 漏洞：缺少零地址检查
+markdown
+---
+type: audit-note
+project: [项目名称]
+severity: [Critical/High/Medium/Low/Informational]
+tags: [tag1, tag2]
+date: YYYY-MM-DD
+status: [in-progress/completed]
+---
 
-**报告来源**：OpenZeppelin Sonic Gateway 审计报告  
-**漏洞位置**：`setTrustedForwarder` 函数  
-**危害**：管理员可能误设零地址，导致元交易功能永久失效  
-**修复方式**：增加 `require(forwarder != address(0))`  
-**我的英语总结**：  
-`Missing zero-address check in setTrustedForwarder allows admin to set forwarder to address(0), which would disable all meta-transactions.`
+## [漏洞编号] [漏洞名称]
 
-**代码示例（漏洞版本 vs 修复版本）**：
+**Severity**: [等级]
 
-\`\`\`solidity
-// 漏洞版本
-function setTrustedForwarder(address forwarder) external onlyOwner {
-    trustedForwarder = forwarder;
-}
+**Location**: [合约文件:行号 或 函数名]
 
-// 修复版本
-function setTrustedForwarder(address forwarder) external onlyOwner {
-    require(forwarder != address(0), "Invalid forwarder");
-    trustedForwarder = forwarder;
-}
-\`\`\`
+**Description**: 
+[用自己的话，2-3句话说清楚漏洞是什么]
+
+**Impact**: 
+[如果被利用，会造成什么后果？]
+
+**Root Cause**: 
+[一句话说清楚：为什么会产生这个漏洞？]
+
+**Fix**: 
+[如何修复？]
+
+**English Takeaway**: 
+[1句英文总结]
+
+**Code (Vulnerable & Fixed)**:
+
+```solidity
+// Vulnerable
+[漏洞代码]
+
+// Fixed
+[修复代码]
