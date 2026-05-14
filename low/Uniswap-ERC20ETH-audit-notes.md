@@ -70,7 +70,6 @@ The completed docstrings help us understand the code more clearly.
  function balanceOf(address) public pure override returns (uint256)
 
 // Fixed
-// Vulnerable
 /// @return the name of the token.
 /// @return the symbol of the token.
 /// @return the amount of tokens in existence.
