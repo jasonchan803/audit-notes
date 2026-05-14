@@ -9,8 +9,9 @@ My personal notes for smart contract audit learning.
 ## Progress
 - 2026-05-12: Created repository, start learning.
 - 2026-05-14: finshed Uniswap-ERC20ETH-audit-notes.
+- 2026-05-14: finshed BARD-Token-Audit-notes.
 
-## Total numbers of notes：2
+## Total numbers of notes：3
 ## Current stage：First stage(Zero business logic vulnerabilities)
 
 
