@@ -4,7 +4,7 @@ project: Uniswap ERC20ETH
 severity: Informational
 tags: 
 - floating pragma
-- incomplete Docstrings
+- incomplete docstrings
 date: 2026-05-14
 status: completed
 ---
@@ -38,3 +38,41 @@ pragma solidity ^0.8.13;
 
 // Fixed
 pragma solidity 0.8.13;
+
+
+## L-02: Incomplete Docstrings
+
+**Severity**: [Informational]
+
+**Location**: `ERC20Eth.sol:27,32,36,37,45`
+
+**Description**: 
+1、name、totalSupply和symbl这3个函数都缺失了@return的标签去分别记录他们的返回值
+2、balanceOf这个函数里面address后面并没有使用一个变量名参数，没有见名知意
+3、totalSupply函数上面多了一行空格，导致这个函数和它的注释分开了
+
+**Impact**: 
+不会有严重的后果，但是对于开发和协助来说，规范的注释有助于理解代码
+
+**Root Cause**: 
+代码书写不规范
+
+**Fix**: 
+重新规范书写，如添加@return标签、增加参数等
+
+**English Takeaway**: 
+The completed docstrings help us understand the code more clearly.
+
+**Code (Vulnerable & Fixed)**:
+
+```solidity
+// Vulnerable
+ function balanceOf(address) public pure override returns (uint256)
+
+// Fixed
+// Vulnerable
+/// @return the name of the token.
+/// @return the symbol of the token.
+/// @return the amount of tokens in existence.
+/// @param account The address to query the balance for
+function balanceOf(address account) public pure override returns (uint256)
