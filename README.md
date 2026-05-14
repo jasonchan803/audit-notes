@@ -10,7 +10,7 @@ My personal notes for smart contract audit learning.
 - 2026-05-12: Created repository, starting with zero-address check.
 
 
-markdown
+
 ---
 type: audit-note
 project: [项目名称]
