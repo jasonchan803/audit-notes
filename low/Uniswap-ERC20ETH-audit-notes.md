@@ -44,12 +44,12 @@ pragma solidity 0.8.13;
 
 **Severity**: [Informational]
 
-**Location**: `ERC20Eth.sol`:`L27-L27`, `L32-L32`, `L36-L37`, `L45-L45`
+**Location**: `ERC20Eth.sol`: `L27-L27`, `L32-L32`, `L36-L38`, `L45-L45`
 
 **Description**: 
-1. name、totalSupply和symbl这3个函数都缺失了@return的标签去分别记录他们的返回值
-2. balanceOf这个函数里面address后面并没有使用一个变量名参数，没有见名知意
-3. totalSupply函数上面多了一行空格，导致这个函数和它的注释分开了
+1. name() at L27, symbol() at L32, totalSupply() at L36-L38，这3个函数都缺失了@return的标签去分别记录他们的返回值
+2. balanceOf(address) at L45这个函数里面address后面并没有使用一个变量名参数，没有见名知意
+3. totalSupply() at L36-L38函数上面多了一行空格，导致这个函数和它的注释分开了
 
 **Impact**: 
 不会有严重的后果，但是对于开发和协助来说，规范的注释有助于理解代码
