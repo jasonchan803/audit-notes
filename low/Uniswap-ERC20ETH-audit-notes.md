@@ -44,7 +44,7 @@ pragma solidity 0.8.13;
 
 **Severity**: [Informational]
 
-**Location**: `ERC20Eth.sol:L27-L27`, `L32-L32`, `L36-L37`, `L45-L45`
+**Location**: `ERC20Eth.sol`:`L27-L27`, `L32-L32`, `L36-L37`, `L45-L45`
 
 **Description**: 
 1. name、totalSupply和symbl这3个函数都缺失了@return的标签去分别记录他们的返回值
