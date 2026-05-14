@@ -13,7 +13,7 @@ status: completed
 
 **Severity**: Informational
 
-**Location**: `ERC20Eth.sol`:`2`
+**Location**: `ERC20Eth.sol`:`L2`
 
 **Description**: 
 这个合约使用了浮动的Pragma版本，solidity ^0.8.13也就是0.8.13以上的版本都兼容
