@@ -1,0 +1,5 @@
+## Custom Error vs Require String
+
+- `require(condition, "xxx")` 会消耗更多 gas（字符串存储）
+- 自定义错误：`error NotOwner(); if (msg.sender != owner) revert NotOwner();` 更省 gas
+- 参考：Solidity 0.8.4+ 引入
