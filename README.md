@@ -10,6 +10,7 @@ My personal notes for smart contract audit learning.
 - 2026-05-12: Created repository, start learning.
 - 2026-05-14: finshed Uniswap-ERC20ETH-audit-notes.
 - 2026-05-14: finshed BARD-Token-Audit-notes.
+- 2025-05-25：深入理解 EIP-712，并完成审计视角的知识笔记
 
 ## Total numbers of notes：3
 ## Current stage：First stage(Zero business logic vulnerabilities)
