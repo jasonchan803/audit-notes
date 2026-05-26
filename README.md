@@ -8,11 +8,12 @@ My personal notes for smart contract audit learning.
 
 ## Progress
 - 2026-05-12: Created repository, start learning.
-- 2026-05-14: finshed Uniswap-ERC20ETH-audit-notes.
-- 2026-05-14: finshed BARD-Token-Audit-notes.
-- 2025-05-25：深入理解 EIP-712，并完成审计视角的知识笔记
+- 2026-05-14: finished Uniswap-ERC20ETH-audit-notes.
+- 2026-05-14: finished BARD-Token-Audit-notes.
+- 2026-05-25：finished EIP-712. 深入理解 EIP-712，并完成审计视角的知识笔记
+- 2026-05-26: finished eip712-version-consistency. 审计 Note：EIP-712 版本一致性（ANVL Token 新旧部署）
 
-## Total numbers of notes：3
+## Total numbers of notes：5
 ## Current stage：First stage(Zero business logic vulnerabilities)
 
 
