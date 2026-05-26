@@ -1,4 +1,4 @@
-## Custom Error vs Require String
+## Custom Error vs Revert String
 
 ```solidity
 revert("xxx...");  // 会消耗更多 gas（字符串存储）
