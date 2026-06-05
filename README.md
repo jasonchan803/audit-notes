@@ -49,9 +49,6 @@ status: [in-progress/completed]
 **Fix**: 
 [如何修复？]
 
-**English Takeaway**: 
-[1句英文总结]
-
 **Code (Vulnerable & Fixed)**:
 
 ```solidity
@@ -61,6 +58,9 @@ status: [in-progress/completed]
 // Fixed
 [修复代码]
 ```
+
+**English Takeaway**: 
+[1句英文总结]
 
 
 
