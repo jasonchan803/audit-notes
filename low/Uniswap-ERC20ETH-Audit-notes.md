@@ -1,7 +1,7 @@
 ---
 type: audit-note
 project: Uniswap ERC20ETH
-severity: Informational
+audit-source: OpenZeppelin
 tags: 
 - floating pragma
 - incomplete docstrings
