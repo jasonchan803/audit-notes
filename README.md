@@ -44,6 +44,8 @@ status: [in-progress/completed]
 **Root Cause**: 
 [一句话说清楚：为什么会产生这个漏洞？]
 
+**My POC Walkthrough (optional)**：[我的POC思路]
+
 **Fix**: 
 [如何修复？]
 
@@ -92,14 +94,14 @@ status: [in-progress/completed]
 
 **Root Cause**: [一句话原因]
 
+**My POC Walkthrough (optional)**：[我的POC思路]
+
 **Fix**: [修复方式]
 
 **Code (Vulnerable & Fixed)**:
 ```solidity
 // Vulnerable
 ```
-
-**My POC Walkthrough (optional)**：[我的POC思路]
 
 **English Takeaway**: [1句英文总结]
 
