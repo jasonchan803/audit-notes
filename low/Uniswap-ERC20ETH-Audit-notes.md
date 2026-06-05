@@ -27,9 +27,6 @@ status: completed
 **Fix**: 
 使用固定的pragma版本，如solidity 0.8.13
 
-**English Takeaway**: 
-The contract may fail to deploy or run due to the use of a floating pragma, which may not support the PUSH0 opcode.
-
 **Code (Vulnerable & Fixed)**:
 
 ```solidity
@@ -39,6 +36,9 @@ pragma solidity ^0.8.13;
 // Fixed
 pragma solidity 0.8.13;
 ```
+
+**English Takeaway**: 
+The contract may fail to deploy or run due to the use of a floating pragma, which may not support the PUSH0 opcode.
 
 ## [L-02]: Incomplete Docstrings
 
@@ -60,9 +60,6 @@ pragma solidity 0.8.13;
 **Fix**: 
 重新规范书写，如添加@return标签、增加参数等
 
-**English Takeaway**: 
-The completed docstrings help us understand the code more clearly.
-
 **Code (Vulnerable & Fixed)**:
 
 ```solidity
@@ -76,3 +73,6 @@ The completed docstrings help us understand the code more clearly.
 /// @param account The address to query the balance for
 function balanceOf(address account) public pure override returns (uint256)
 ```
+
+**English Takeaway**: 
+The completed docstrings help us understand the code more clearly.
