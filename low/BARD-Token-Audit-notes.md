@@ -8,7 +8,7 @@ date: 2026-05-14
 status: completed
 ---
 
-## L01：Duplicate Event Emission in mint
+## [L-01]：Duplicate Event Emission in mint
 
 **Severity**: Low
 
