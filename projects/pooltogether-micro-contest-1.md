@@ -44,6 +44,7 @@ function swapYieldSource(IYieldSource _newYieldSource) external onlyTimelock {
     // 或者只允许切换到预先注册的白名单地址
 }
 ```
+
 **My POC Walkthrough (optional)**：[我的POC思路]
 
 **English Takeaway**:
@@ -53,29 +54,47 @@ Administrative roles with the power to migrate user funds must be protected by t
 ## Medium Risk Findings
 
 ### [M-01]: swapYieldSource 权限过大导致资金被 rug
+
 **Location**: [合约文件:行号 或 函数名]
+
 **Description**: [用自己的话描述]
+
 **Impact**: [后果]
+
 **Root Cause**: [一句话原因]
+
 **Fix**: [修复方式]
+
+**Code (Vulnerable & Fixed)**:
 ```solidity
 // Vulnerable
 ```
+
 **My POC Walkthrough (optional)**：[我的POC思路]
+
 **English Takeaway**: [1句英文总结]
 
 ## Low Risk Findings
 
 ### [L-01]: swapYieldSource 权限过大导致资金被 rug
+
 **Location**: [合约文件:行号 或 函数名]
+
 **Description**: [用自己的话描述]
+
 **Impact**: [后果]
+
 **Root Cause**: [一句话原因]
+
 **Fix**: [修复方式]
+
+**Code (Vulnerable & Fixed)**:
 ```solidity
 // Vulnerable
 ```
+
 **My POC Walkthrough (optional)**：[我的POC思路]
+
 **English Takeaway**: [1句英文总结]
 
 ## Summary & Takeaways
