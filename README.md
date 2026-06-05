@@ -23,7 +23,7 @@ My personal notes for smart contract audit learning.
 ---
 type: audit-note
 project: [项目名称]
-severity: [Critical/High/Medium/Low/Informational]
+audit-source: [Code4rena / OpenZeppelin / 其他]
 tags: [tag1, tag2]
 date: YYYY-MM-DD
 status: [in-progress/completed]
@@ -31,7 +31,7 @@ status: [in-progress/completed]
 
 ## [漏洞编号] [漏洞名称]
 
-**Severity**: [等级]
+**Severity**: [Critical/High/Medium/Low/Informational]
 
 **Location**: [合约文件:行号 或 函数名]
 
@@ -70,7 +70,7 @@ project: [项目名称]
 audit-source: [Code4rena / OpenZeppelin / 其他]
 date: YYYY-MM-DD
 tags: [tag1, tag2]
-status: completed
+status: [in-progress/completed]
 ---
 
 # [Project Name] Audit Learning Notes
@@ -81,6 +81,8 @@ status: completed
 ## High Risk Findings
 
 ### [H-01]: swapYieldSource 权限过大导致资金被 rug
+
+**Severity**: [Critical/High/Medium/Low/Informational]
 
 **Location**: [合约文件:行号 或 函数名]
 
