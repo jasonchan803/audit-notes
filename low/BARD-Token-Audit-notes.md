@@ -1,7 +1,7 @@
 ---
 type: audit-note
 project: BARD Token
-severity: Low
+audit-source: OpenZeppelin
 tags: 
  - Duplicate Event
 date: 2026-05-14
