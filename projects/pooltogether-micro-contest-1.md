@@ -29,6 +29,8 @@ Owner 或 AssetManager 可以随时将收益源地址切换到自己控制的恶
 **Root Cause**: 
 缺少对收益源合约的信任校验，且切换操作无延迟和多签控制。
 
+**My POC Walkthrough (optional)**：[我的POC思路]
+
 **Fix**: 
 使用多签治理 + Timelock 控制该权限，或完全移除该功能。
 
@@ -46,8 +48,6 @@ function swapYieldSource(IYieldSource _newYieldSource) external onlyTimelock {
     // 或者只允许切换到预先注册的白名单地址
 }
 ```
-
-**My POC Walkthrough (optional)**：[我的POC思路]
 
 **English Takeaway**:
 Administrative roles with the power to migrate user funds must be protected by timelocks and multi-signature wallets.
@@ -67,14 +67,14 @@ Administrative roles with the power to migrate user funds must be protected by t
 
 **Root Cause**: [一句话原因]
 
+**My POC Walkthrough (optional)**：[我的POC思路]
+
 **Fix**: [修复方式]
 
 **Code (Vulnerable & Fixed)**:
 ```solidity
 // Vulnerable
 ```
-
-**My POC Walkthrough (optional)**：[我的POC思路]
 
 **English Takeaway**: [1句英文总结]
 
@@ -92,14 +92,14 @@ Administrative roles with the power to migrate user funds must be protected by t
 
 **Root Cause**: [一句话原因]
 
+**My POC Walkthrough (optional)**：[我的POC思路]
+
 **Fix**: [修复方式]
 
 **Code (Vulnerable & Fixed)**:
 ```solidity
 // Vulnerable
 ```
-
-**My POC Walkthrough (optional)**：[我的POC思路]
 
 **English Takeaway**: [1句英文总结]
 
