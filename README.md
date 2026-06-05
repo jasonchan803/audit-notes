@@ -73,47 +73,56 @@ tags: [tag1, tag2]
 status: completed
 ---
 
-# [项目名称] 审计学习笔记
+# [Project Name] Audit Learning Notes
 
-## 项目简述
+## Project Brief
 [用一两句话说清楚这个项目是做什么的]
 
-## 漏洞列表
+## High Risk Findings
 
-### [漏洞编号] [漏洞名称] (Severity: [等级])
+### [H-01]: swapYieldSource 权限过大导致资金被 rug
 
-## High Risk
-
-### H-01: swapYieldSource 权限过大导致资金被 rug
 **Location**: [合约文件:行号 或 函数名]
+
 **Description**: [用自己的话描述]
+
 **Impact**: [后果]
+
 **Root Cause**: [一句话原因]
+
 **Fix**: [修复方式]
-**我的POC思路**：...
 
-### H-02: redeemToken 错误使用 transferFrom
-...
+**Code (Vulnerable & Fixed)**:
+```solidity
+// Vulnerable
+```
 
-### H-03: transferERC20 允许转走 depositToken（独立发现）
-...
-
-## Medium Risk（仅记录新模式）
-
-### M-01: 滑点攻击
-（如果之前没见过，记下来；否则不记）
-
-## Low Risk（仅记录从未见过的）
-
-### L-01: 使用 block.timestamp 作为随机数源
-...
+**My POC Walkthrough (optional)**：[我的POC思路]
 
 **English Takeaway**: [1句英文总结]
 
-## 总结与收获
-- 权限控制必须假设管理员不可信，应使用多签+Timelock
-- 资金流转时要区分 `transfer` 和 `transferFrom` 的使用场景
-- ...
+### [H-02]: redeemToken 错误使用 transferFrom
+...
 
-## 延伸思考
+### [H-03]: transferERC20 允许转走 depositToken（独立发现）
+...
+
+## Medium Risk Findings（仅记录新模式）
+
+### [M-01]: 滑点攻击
+（如果之前没见过，记下来；否则不记）
+
+## Low Risk Findings（仅记录从未见过的）
+
+### [L-01]: 使用 block.timestamp 作为随机数源
+...
+
+## Summary & Takeaways
+- [总结和收获]
+- 任何允许管理员单方面转移用户资产的函数都应视为高危，除非有强力缓冲机制。
+- 资金流转时，区分 transfer 和 transferFrom 的使用场景至关重要。
+- 审计不能假设管理员诚实，应设计最小权限原则。
+
+## Further Thoughts
+- [延伸思考]
 - 如果使用 OpenZeppelin 的最新库，哪些问题会自动避免？
