@@ -9,7 +9,7 @@ date: 2026-05-14
 status: completed
 ---
 
-## L-01: Floating Pragma
+## [L-01]: Floating Pragma
 
 **Severity**: Informational
 
@@ -40,7 +40,7 @@ pragma solidity ^0.8.13;
 pragma solidity 0.8.13;
 ```
 
-## L-02: Incomplete Docstrings
+## [L-02]: Incomplete Docstrings
 
 **Severity**: Informational
 
