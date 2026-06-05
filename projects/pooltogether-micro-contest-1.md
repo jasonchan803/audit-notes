@@ -12,27 +12,25 @@ status: in-progress
 ## Project Brief
 PoolTogether 是一个无损彩票协议。用户存入 DAI 等资产，利息汇入奖池，每周开奖一次。本审计针对其收益源可切换模块 `SwappableYieldSource`。
 
-## Vulnerability List
-
 ## High Risk Findings
 
 ### [H-01]: swapYieldSource 权限过大 (Severity: High)
 
-- **Location**: `SwappableYieldSource.sol` 中的 `swapYieldSource()` 和 `_setYieldSource()`
+**Location**: `SwappableYieldSource.sol` 中的 `swapYieldSource()` 和 `_setYieldSource()`
 
-- **Description**: 
+**Description**: 
 Owner 或 AssetManager 可以随时将收益源地址切换到自己控制的恶意合约，只要该合约实现了 `IYieldSource` 接口。切换后，所有资金会通过内部逻辑转移到新收益源，导致 rug pull。
 
-- **Impact**: 
+**Impact**: 
 资金完全丢失。即使用户不作恶，私钥泄露同样导致毁灭性后果。
 
-- **Root Cause**: 
+**Root Cause**: 
 缺少对收益源合约的信任校验，且切换操作无延迟和多签控制。
 
-- **Fix**: 
+**Fix**: 
 使用多签治理 + Timelock 控制该权限，或完全移除该功能。
 
-- **Code (Vulnerable & Fixed)**:
+**Code (Vulnerable & Fixed)**:
 ```solidity
 // Vulnerable
 function swapYieldSource(IYieldSource _newYieldSource) external onlyOwnerOrAssetManager {
@@ -46,12 +44,39 @@ function swapYieldSource(IYieldSource _newYieldSource) external onlyTimelock {
     // 或者只允许切换到预先注册的白名单地址
 }
 ```
+**My POC Walkthrough (optional)**：[我的POC思路]
 
-- **English Takeaway**:
+**English Takeaway**:
 Administrative roles with the power to migrate user funds must be protected by timelocks and multi-signature wallets.
 ...
 
-（后续漏洞同理）
+## Medium Risk Findings
+
+### [M-01]: swapYieldSource 权限过大导致资金被 rug
+**Location**: [合约文件:行号 或 函数名]
+**Description**: [用自己的话描述]
+**Impact**: [后果]
+**Root Cause**: [一句话原因]
+**Fix**: [修复方式]
+```solidity
+// Vulnerable
+```
+**My POC Walkthrough (optional)**：[我的POC思路]
+**English Takeaway**: [1句英文总结]
+
+## Low Risk Findings
+
+### [L-01]: swapYieldSource 权限过大导致资金被 rug
+**Location**: [合约文件:行号 或 函数名]
+**Description**: [用自己的话描述]
+**Impact**: [后果]
+**Root Cause**: [一句话原因]
+**Fix**: [修复方式]
+```solidity
+// Vulnerable
+```
+**My POC Walkthrough (optional)**：[我的POC思路]
+**English Takeaway**: [1句英文总结]
 
 ## Summary & Takeaways
 - 任何允许管理员单方面转移用户资产的函数都应视为高危，除非有强力缓冲机制。
