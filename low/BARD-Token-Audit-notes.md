@@ -27,10 +27,6 @@ status: completed
 **Fix**: 
 删除`Mint(to, amount)`事件和相关函数的代码
 
-**English Takeaway**: 
-When you call the mint function, it will emit a custom Mint(to, amount)event and a Transfer(address(0), to, amount)event, 
-but actually these events convey the same information. Therefore, I suggest removing the redundant Mintevent to simplify the code.
-
 **Code (Vulnerable & Fixed)**:
 
 ```solidity
@@ -40,3 +36,7 @@ emit Mint(to, amount)
 // Fixed
 // removing the redundant Mint event
 ```
+
+**English Takeaway**: 
+When you call the mint function, it will emit a custom Mint(to, amount)event and a Transfer(address(0), to, amount)event, 
+but actually these events convey the same information. Therefore, I suggest removing the redundant Mintevent to simplify the code.
