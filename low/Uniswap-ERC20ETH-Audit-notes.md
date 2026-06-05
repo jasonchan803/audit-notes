@@ -42,7 +42,7 @@ pragma solidity 0.8.13;
 
 ## L-02: Incomplete Docstrings
 
-**Severity**: [Informational]
+**Severity**: Informational
 
 **Location**: `ERC20Eth.sol`: `L27-L27`, `L32-L32`, `L36-L38`, `L45-L45`
 
