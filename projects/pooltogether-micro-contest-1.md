@@ -51,7 +51,116 @@ function swapYieldSource(IYieldSource _newYieldSource) external onlyTimelock {
 
 **English Takeaway**:
 Administrative roles with the power to migrate user funds must be protected by timelocks and multi-signature wallets.
-...
+
+### [H-02]: 
+
+**Severity**: High
+
+**Location**: `SwappableYieldSource.sol` 中的 `swapYieldSource()` 和 `_setYieldSource()`
+
+**Description**: 
+
+
+**Impact**: 
+
+
+**Root Cause**: 
+
+
+**My POC Walkthrough (optional)**：[我的POC思路]
+
+**Fix**: 
+
+
+**Code (Vulnerable & Fixed)**:
+```solidity
+
+```
+
+**English Takeaway**:
+
+
+### [H-03]: 
+
+**Severity**: High
+
+**Location**: `SwappableYieldSource.sol` 中的 `swapYieldSource()` 和 `_setYieldSource()`
+
+**Description**: 
+
+
+**Impact**: 
+
+
+**Root Cause**: 
+
+
+**My POC Walkthrough (optional)**：[我的POC思路]
+
+**Fix**: 
+
+
+**Code (Vulnerable & Fixed)**:
+```solidity
+
+```
+
+**English Takeaway**:
+
+### [H-04]: 
+
+**Severity**: High
+
+**Location**: `SwappableYieldSource.sol` 中的 `swapYieldSource()` 和 `_setYieldSource()`
+
+**Description**: 
+
+
+**Impact**: 
+
+
+**Root Cause**: 
+
+
+**My POC Walkthrough (optional)**：[我的POC思路]
+
+**Fix**: 
+
+
+**Code (Vulnerable & Fixed)**:
+```solidity
+
+```
+
+**English Takeaway**:
+
+### [H-05]: 
+
+**Severity**: High
+
+**Location**: `SwappableYieldSource.sol` 中的 `swapYieldSource()` 和 `_setYieldSource()`
+
+**Description**: 
+
+
+**Impact**: 
+
+
+**Root Cause**: 
+
+
+**My POC Walkthrough (optional)**：[我的POC思路]
+
+**Fix**: 
+
+
+**Code (Vulnerable & Fixed)**:
+```solidity
+
+```
+
+**English Takeaway**:
+
 
 ## Medium Risk Findings
 
@@ -100,8 +209,60 @@ Administrative roles with the power to migrate user funds must be protected by t
 ```solidity
 // Vulnerable
 ```
+### [H-04]: swapYieldSource 权限过大
 
-**English Takeaway**: [1句英文总结]
+**Severity**: High
+
+**Location**: `SwappableYieldSource.sol` 中的 `swapYieldSource()` 和 `_setYieldSource()`
+
+**Description**: 
+
+
+**Impact**: 
+
+
+**Root Cause**: 
+
+
+**My POC Walkthrough (optional)**：[我的POC思路]
+
+**Fix**: 
+
+
+**Code (Vulnerable & Fixed)**:
+```solidity
+
+```
+
+**English Takeaway**:
+
+### [H-02]: swapYieldSource 权限过大
+
+**Severity**: High
+
+**Location**: `SwappableYieldSource.sol` 中的 `swapYieldSource()` 和 `_setYieldSource()`
+
+**Description**: 
+
+
+**Impact**: 
+
+
+**Root Cause**: 
+
+
+**My POC Walkthrough (optional)**：[我的POC思路]
+
+**Fix**: 
+
+
+**Code (Vulnerable & Fixed)**:
+```solidity
+
+```
+
+**English Takeaway**:
+
 
 ## Summary & Takeaways
 - 任何允许管理员单方面转移用户资产的函数都应视为高危，除非有强力缓冲机制。
