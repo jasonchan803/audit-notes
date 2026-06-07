@@ -29,9 +29,6 @@ Owner 或 AssetManager 可以随时将收益源地址切换到自己控制的恶
 **Root Cause**: 
 缺少对收益源合约的信任校验，且切换操作无延迟和多签控制。
 
-**English Takeaway**:
-Administrative roles with the power to migrate user funds must be protected by timelocks and multi-signature wallets.
-
 **My POC Walkthrough (optional)**：[我的POC思路]
 
 **Fix**: 
@@ -52,6 +49,8 @@ function swapYieldSource(IYieldSource _newYieldSource) external onlyTimelock {
 }
 ```
 
+**English Takeaway**:
+Administrative roles with the power to migrate user funds must be protected by timelocks and multi-signature wallets.
 
 ## [H-02]: 
 
@@ -68,9 +67,6 @@ function swapYieldSource(IYieldSource _newYieldSource) external onlyTimelock {
 **Root Cause**: 
 
 
-**English Takeaway**:
-
-
 **My POC Walkthrough (optional)**：[我的POC思路]
 
 **Fix**: 
@@ -80,6 +76,9 @@ function swapYieldSource(IYieldSource _newYieldSource) external onlyTimelock {
 ```solidity
 
 ```
+
+**English Takeaway**:
+
 
 
 ## [H-03]: 
@@ -97,9 +96,6 @@ function swapYieldSource(IYieldSource _newYieldSource) external onlyTimelock {
 **Root Cause**: 
 
 
-**English Takeaway**:
-
-
 **My POC Walkthrough (optional)**：[我的POC思路]
 
 
@@ -110,6 +106,9 @@ function swapYieldSource(IYieldSource _newYieldSource) external onlyTimelock {
 ```solidity
 
 ```
+
+**English Takeaway**:
+
 
 
 ## [H-04]: 
@@ -127,9 +126,6 @@ function swapYieldSource(IYieldSource _newYieldSource) external onlyTimelock {
 **Root Cause**: 
 
 
-**English Takeaway**:
-
-
 **My POC Walkthrough (optional)**：[我的POC思路]
 
 
@@ -140,6 +136,9 @@ function swapYieldSource(IYieldSource _newYieldSource) external onlyTimelock {
 ```solidity
 
 ```
+
+**English Takeaway**:
+
 
 
 ## [H-05]: 
@@ -160,9 +159,6 @@ function swapYieldSource(IYieldSource _newYieldSource) external onlyTimelock {
 **Root Cause**: 
 
 
-**English Takeaway**:
-
-
 **My POC Walkthrough (optional)**：[我的POC思路]
 
 
@@ -173,6 +169,9 @@ function swapYieldSource(IYieldSource _newYieldSource) external onlyTimelock {
 ```solidity
 
 ```
+
+**English Takeaway**:
+
 
 
 ## Medium Risk Findings
