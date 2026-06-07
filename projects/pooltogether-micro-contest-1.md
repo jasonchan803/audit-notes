@@ -29,6 +29,9 @@ Owner 或 AssetManager 可以随时将收益源地址切换到自己控制的恶
 **Root Cause**: 
 缺少对收益源合约的信任校验，且切换操作无延迟和多签控制。
 
+**English Takeaway**:
+Administrative roles with the power to migrate user funds must be protected by timelocks and multi-signature wallets.
+
 **My POC Walkthrough (optional)**：[我的POC思路]
 
 **Fix**: 
@@ -49,8 +52,6 @@ function swapYieldSource(IYieldSource _newYieldSource) external onlyTimelock {
 }
 ```
 
-**English Takeaway**:
-Administrative roles with the power to migrate user funds must be protected by timelocks and multi-signature wallets.
 
 ## [H-02]: 
 
@@ -67,6 +68,9 @@ Administrative roles with the power to migrate user funds must be protected by t
 **Root Cause**: 
 
 
+**English Takeaway**:
+
+
 **My POC Walkthrough (optional)**：[我的POC思路]
 
 **Fix**: 
@@ -76,8 +80,6 @@ Administrative roles with the power to migrate user funds must be protected by t
 ```solidity
 
 ```
-
-**English Takeaway**:
 
 
 ## [H-03]: 
@@ -95,7 +97,11 @@ Administrative roles with the power to migrate user funds must be protected by t
 **Root Cause**: 
 
 
+**English Takeaway**:
+
+
 **My POC Walkthrough (optional)**：[我的POC思路]
+
 
 **Fix**: 
 
@@ -105,7 +111,6 @@ Administrative roles with the power to migrate user funds must be protected by t
 
 ```
 
-**English Takeaway**:
 
 ## [H-04]: 
 
@@ -122,7 +127,11 @@ Administrative roles with the power to migrate user funds must be protected by t
 **Root Cause**: 
 
 
+**English Takeaway**:
+
+
 **My POC Walkthrough (optional)**：[我的POC思路]
+
 
 **Fix**: 
 
@@ -132,13 +141,15 @@ Administrative roles with the power to migrate user funds must be protected by t
 
 ```
 
-**English Takeaway**:
 
 ## [H-05]: 
 
+
 **Severity**: High
 
+
 **Location**: `SwappableYieldSource.sol` 中的 `swapYieldSource()` 和 `_setYieldSource()`
+
 
 **Description**: 
 
@@ -149,7 +160,11 @@ Administrative roles with the power to migrate user funds must be protected by t
 **Root Cause**: 
 
 
+**English Takeaway**:
+
+
 **My POC Walkthrough (optional)**：[我的POC思路]
+
 
 **Fix**: 
 
@@ -158,8 +173,6 @@ Administrative roles with the power to migrate user funds must be protected by t
 ```solidity
 
 ```
-
-**English Takeaway**:
 
 
 ## Medium Risk Findings
