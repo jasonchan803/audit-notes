@@ -59,8 +59,7 @@ Administrative roles with the power to migrate user funds must be protected by t
 **Location**: `SwappableYieldSource.sol` 中的 `redeemToken()`: L240
 
 **Description**: 
-当用户赎回存款时，调用`redeemToken()`函数， `_burnShares(amount)` 会先销毁用户在`SwappableYieldSource` 中的份额 ，然后`yieldSource.redeemToken()` 会将存款从 `YieldSource` 收益源合约中赎回到本合约 `SwappableYieldSource` 中，然后再通过 `_depositToken.safeTransferFrom()` 将存款转回给用户，问题就是 `safeTransferFrom()` 是一个授权转账函数，本来就是自己转账出去，直接转就行了,不应该自己授权自己再转账，
-这样不但耗费更多gas，而且还可能导致失败，因为 `safeTransferFrom()` 有可能需要授权额度才能转账成功，而代码中并没有自己给自己授权额度，所以会导致转账失败
+当用户赎回存款时，`_burnShares(amount)` 会先销毁用户在`SwappableYieldSource` 中的份额 ，然后`yieldSource.redeemToken()` 会将存款从 `YieldSource` 收益源合约中赎回到本合约 `SwappableYieldSource` 中，然后再通过 `_depositToken.safeTransferFrom()` 将存款转回给用户，问题就是 `safeTransferFrom()` 是一个授权转账函数，本来就是自己转账出去，直接转就行了,不应该自己授权自己再转账，这样不但耗费更多gas，而且还可能导致失败，因为 `safeTransferFrom()` 有可能需要授权额度才能转账成功，而代码中并没有自己给自己授权额度，所以会导致转账失败
 
 **Impact**: 
 用户提现有可能会失败，导致无法取回资金
@@ -79,41 +78,52 @@ Administrative roles with the power to migrate user funds must be protected by t
 _depositToken.safeTransferFrom(address(this), msg.sender, redeemableBalance);
 
 // Fixed
-_depositToken.safeTransfer(address(this), msg.sender, redeemableBalance);
+_depositToken.safeTransfer(msg.sender, redeemableBalance);
 ```
 
 **English Takeaway**:
 Prioritize using safeTransfer()to transfer funds when the funds are in the contract. This directly sends the funds to the user and does not require any approval of allowance.
 
 
-## [H-03]: 
+## [H-03]: setYieldSource 会导致份额结果出错
 
 **Severity**: High
 
-**Location**: `SwappableYieldSource.sol` 中的 `swapYieldSource()` 和 `_setYieldSource()`
+**Location**: `SwappableYieldSource.sol` 中的 `setYieldSource()`: L268-L271
 
 **Description**: 
-
+当使用  `setYieldSource()` 单独切换收益源地址时，在旧收益源地址的资金没有转移到新的收益源地址之前，会出现一个真空期，此时存款到 `SwappableYieldSource` 中，获得的份额会比实际份额要多，用户可以在这个真空期使用少量的资金获取大量的份额，等资金全部转移到新收益源地址后直接提现获利
 
 **Impact**: 
-
+可造成合约的资金损失
 
 **Root Cause**: 
-
+在这个真空期，新收益源地址的一开始的供应和余额为0，此时存款和份额是以当前收益源地址的供应 `totalSupply()` 和余额 `yieldSource.balanceOfToken(address(this)` 计算的,而不是旧的收益源，所以当前存款会获取到更多的份额
 
 **My POC Walkthrough (optional)**：[我的POC思路]
 
 
 **Fix**: 
-
+删除 `setYieldSource()` 外部调用 ，只通过 `_setYieldSource()` 内部调用切换收益源地址
 
 **Code (Vulnerable & Fixed)**:
 ```solidity
+// Vulnerable
+  /// @notice Set new yield source.
+  /// @dev This function is only callable by the owner or asset manager.
+  /// @param _newYieldSource New yield source address to set.
+  /// @return true if operation is successful.
+  function setYieldSource(IYieldSource _newYieldSource) external onlyOwnerOrAssetManager returns (bool) {
+    _setYieldSource(_newYieldSource);
+    return true;
+  }
+
+// Fixed
 
 ```
 
 **English Takeaway**:
-
+The swap of the YieldSource cannot be separated into two steps. Keep it as an atomic operation to prevent users from depositing before the funds are transferred from the old YieldSource to the new one.
 
 
 ## [H-04]: 
