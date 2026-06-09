@@ -12,8 +12,11 @@ My personal notes for smart contract audit learning.
 - 2026-05-14: finished BARD-Token-Audit-notes.
 - 2026-05-25：finished EIP-712. 深入理解 EIP-712，并完成审计视角的知识笔记
 - 2026-05-26: finished eip712-version-consistency. 审计 Note：EIP-712 版本一致性（ANVL Token 新旧部署）
+- 2026-06-09: finished high risk findings in PoolTogether Micro Contest #1 Audit Learning Notes.
 
-## Total numbers of notes：5
+
+
+## Total numbers of notes：6
 ## Current stage：First stage(Zero business logic vulnerabilities)
 
 
@@ -82,7 +85,7 @@ status: [in-progress/completed]
 
 ## High Risk Findings
 
-### [H-01]: swapYieldSource 权限过大导致资金被 rug
+### [H-01]: 
 
 **Severity**: [Critical/High/Medium/Low/Informational]
 
@@ -101,25 +104,73 @@ status: [in-progress/completed]
 **Code (Vulnerable & Fixed)**:
 ```solidity
 // Vulnerable
+[漏洞代码]
+
+// Fixed
+[修复代码]
 ```
 
 **English Takeaway**: [1句英文总结]
 
-### [H-02]: redeemToken 错误使用 transferFrom
-...
-
-### [H-03]: transferERC20 允许转走 depositToken（独立发现）
-...
 
 ## Medium Risk Findings（仅记录新模式）
 
-### [M-01]: 滑点攻击
-（如果之前没见过，记下来；否则不记）
+### [M-01]: 
+
+**Severity**: [Critical/High/Medium/Low/Informational]
+
+**Location**: [合约文件:行号 或 函数名]
+
+**Description**: [用自己的话描述]
+
+**Impact**: [后果]
+
+**Root Cause**: [一句话原因]
+
+**My POC Walkthrough (optional)**：[我的POC思路]
+
+**Fix**: [修复方式]
+
+**Code (Vulnerable & Fixed)**:
+```solidity
+// Vulnerable
+[漏洞代码]
+
+// Fixed
+[修复代码]
+```
+
+**English Takeaway**: [1句英文总结]
+
 
 ## Low Risk Findings（仅记录从未见过的）
 
-### [L-01]: 使用 block.timestamp 作为随机数源
-...
+### [L-01]: 
+
+**Severity**: [Critical/High/Medium/Low/Informational]
+
+**Location**: [合约文件:行号 或 函数名]
+
+**Description**: [用自己的话描述]
+
+**Impact**: [后果]
+
+**Root Cause**: [一句话原因]
+
+**My POC Walkthrough (optional)**：[我的POC思路]
+
+**Fix**: [修复方式]
+
+**Code (Vulnerable & Fixed)**:
+```solidity
+// Vulnerable
+[漏洞代码]
+
+// Fixed
+[修复代码]
+```
+
+**English Takeaway**: [1句英文总结]
 
 ## Summary & Takeaways
 - [总结和收获]
