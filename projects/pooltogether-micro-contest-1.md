@@ -109,10 +109,6 @@ Prioritize using safeTransfer()to transfer funds when the funds are in the contr
 **Code (Vulnerable & Fixed)**:
 ```solidity
 // Vulnerable
-  /// @notice Set new yield source.
-  /// @dev This function is only callable by the owner or asset manager.
-  /// @param _newYieldSource New yield source address to set.
-  /// @return true if operation is successful.
   function setYieldSource(IYieldSource _newYieldSource) external onlyOwnerOrAssetManager returns (bool) {
     _setYieldSource(_newYieldSource);
     return true;
@@ -150,11 +146,6 @@ The swap of the YieldSource cannot be separated into two steps. Keep it as an at
 **Code (Vulnerable & Fixed)**:
 ```solidity
 // Vulnerable
-  /// @notice Transfer funds from specified yield source to current yield source.
-  /// @dev We only verify it is a different yield source in the public function cause we already check for it in `_setYieldSource` function.
-  /// @param _yieldSource Yield source address to transfer funds from.
-  /// @param amount Amount of funds to transfer from passed yield source to current yield source.
-  /// @return true if operation is successful.
   function transferFunds(IYieldSource _yieldSource, uint256 amount) external onlyOwnerOrAssetManager returns (bool) {
     _requireDifferentYieldSource(_yieldSource);
     _transferFunds(_yieldSource, amount);
@@ -196,12 +187,6 @@ Keep checking that the deposit token is the same when the owner or the asset man
 **Code (Vulnerable & Fixed)**:
 ```solidity
 // Vulnerable
-  /// @notice Transfer ERC20 tokens other than the yield source's tokens held by this contract to the recipient address.
-  /// @dev This function is only callable by the owner or asset manager.
-  /// @param erc20Token ERC20 token to transfer.
-  /// @param to Recipient of the tokens.
-  /// @param amount Amount of tokens to transfer.
-  /// @return true if operation is successful.
   function transferERC20(IERC20Upgradeable erc20Token, address to, uint256 amount) external onlyOwnerOrAssetManager returns (bool) {
     require(address(erc20Token) != address(yieldSource), "SwappableYieldSource/yield-source-token-transfer-not-allowed");
     erc20Token.safeTransfer(to, amount);
@@ -211,12 +196,6 @@ Keep checking that the deposit token is the same when the owner or the asset man
 }
 
 // Fixed
-  /// @notice Transfer ERC20 tokens other than the yield source's tokens held by this contract to the recipient address.
-  /// @dev This function is only callable by the owner or asset manager.
-  /// @param erc20Token ERC20 token to transfer.
-  /// @param to Recipient of the tokens.
-  /// @param amount Amount of tokens to transfer.
-  /// @return true if operation is successful.
   function transferERC20(IERC20Upgradeable erc20Token, address to, uint256 amount) external onlyOwnerOrAssetManager returns (bool) {
     require(address(erc20Token) != address(yieldSource), "SwappableYieldSource/yield-source-token-transfer-not-allowed");
     require(address(erc20Token) != yieldSource.depositToken(), "SwappableYieldSource/different-deposit-token");
