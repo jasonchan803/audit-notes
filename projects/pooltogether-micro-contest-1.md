@@ -160,7 +160,7 @@ The swap of the YieldSource cannot be separated into two steps. Keep it as an at
 Keep checking that the deposit token is the same when the owner or the asset manager calls _transferFunds().
 
 
-## [H-05]: transferERC20 可以转走包括收益源代币在内的所有代币
+## [H-05-self]: transferERC20 可以转走包括收益源代币在内的所有代币
 
 
 **Severity**: High
@@ -170,7 +170,7 @@ Keep checking that the deposit token is the same when the owner or the asset man
 
 
 **Description**: 
- `transferERC20()` 只检查了转账的代币是否与收益源地址不一致，并没有检查是否和收益源代币的地址不一致，假设收益源代币地址一致，然后出现收益源代币停留在 `SwappableYieldSource` 中的情况（比如由于gas不足，设置完新收益源地址后，不能及时的把资金转移到新的收益源地址），那么 Owner 或者 AssetManager 可以转走停留在 `SwappableYieldSource` 中的收益源代币
+ `transferERC20()` 只检查了转账的代币是否与收益源地址不一致，并没有检查是否和收益源代币的地址不一致，当收益源代币地址一致，且出现收益源代币停留在 `SwappableYieldSource` 中的情况（比如由于gas不足，设置完新收益源地址后，不能及时的把资金转移到新的收益源地址），那么 Owner 或者 AssetManager 可以转走停留在 `SwappableYieldSource` 中的收益源代币
 
 **Impact**: 
 用户资金丢失，资金可以被 Owner 或者 AssetManager 转走
