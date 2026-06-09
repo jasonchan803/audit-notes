@@ -212,9 +212,9 @@ The erc20Token token must be verified to be different from the deposit token, wh
 
 ## Medium Risk Findings
 
-### [M-01]: swapYieldSource 权限过大导致资金被 rug
+### [M-01]: Ownership 转移不够严谨
 
-**Severity**: [Critical/High/Medium/Low/Informational]
+**Severity**: Medium
 
 **Location**: [合约文件:行号 或 函数名]
 
@@ -231,13 +231,16 @@ The erc20Token token must be verified to be different from the deposit token, wh
 **Code (Vulnerable & Fixed)**:
 ```solidity
 // Vulnerable
+
+// Fixed
+
 ```
 
 **English Takeaway**: [1句英文总结]
 
 ## Low Risk Findings
 
-### [L-01]: swapYieldSource 权限过大导致资金被 rug
+### [L-01]: 
 
 **Severity**: [Critical/High/Medium/Low/Informational]
 
@@ -256,56 +259,8 @@ The erc20Token token must be verified to be different from the deposit token, wh
 **Code (Vulnerable & Fixed)**:
 ```solidity
 // Vulnerable
-```
-### [H-04]: swapYieldSource 权限过大
 
-**Severity**: High
-
-**Location**: `SwappableYieldSource.sol` 中的 `swapYieldSource()` 和 `_setYieldSource()`
-
-**Description**: 
-
-
-**Impact**: 
-
-
-**Root Cause**: 
-
-
-**My POC Walkthrough (optional)**：[我的POC思路]
-
-**Fix**: 
-
-
-**Code (Vulnerable & Fixed)**:
-```solidity
-
-```
-
-**English Takeaway**:
-
-### [H-02]: swapYieldSource 权限过大
-
-**Severity**: High
-
-**Location**: `SwappableYieldSource.sol` 中的 `swapYieldSource()` 和 `_setYieldSource()`
-
-**Description**: 
-
-
-**Impact**: 
-
-
-**Root Cause**: 
-
-
-**My POC Walkthrough (optional)**：[我的POC思路]
-
-**Fix**: 
-
-
-**Code (Vulnerable & Fixed)**:
-```solidity
+// Fixed
 
 ```
 
