@@ -198,7 +198,7 @@ Keep checking that the deposit token is the same when the owner or the asset man
 // Fixed
   function transferERC20(IERC20Upgradeable erc20Token, address to, uint256 amount) external onlyOwnerOrAssetManager returns (bool) {
     require(address(erc20Token) != address(yieldSource), "SwappableYieldSource/yield-source-token-transfer-not-allowed");
-    require(address(erc20Token) != yieldSource.depositToken(), "SwappableYieldSource/different-deposit-token");
+    require(address(erc20Token) != address(yieldSource).depositToken(), "SwappableYieldSource/different-deposit-token");
     erc20Token.safeTransfer(to, amount);
     emit TransferredERC20(msg.sender, to, amount, erc20Token);
     return true;
