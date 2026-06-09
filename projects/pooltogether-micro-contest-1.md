@@ -52,7 +52,7 @@ function swapYieldSource(IYieldSource _newYieldSource) external onlyTimelock {
 **English Takeaway**:
 Administrative roles with the power to migrate user funds must be protected by timelocks and multi-signature wallets.
 
-## [H-02]: redeemToken 功能失效
+## [H-02]: redeemToken 赎回功能失效
 
 **Severity**: High
 
@@ -104,7 +104,7 @@ Prioritize using safeTransfer()to transfer funds when the funds are in the contr
 
 
 **Fix**: 
-删除 `setYieldSource()` 外部调用 ，只通过 `_setYieldSource()` 内部调用切换收益源地址
+删除 `setYieldSource()` 外部调用 ，只通过 `_setYieldSource()` 内部调用设置新的收益源地址
 
 **Code (Vulnerable & Fixed)**:
 ```solidity
@@ -126,67 +126,109 @@ Prioritize using safeTransfer()to transfer funds when the funds are in the contr
 The swap of the YieldSource cannot be separated into two steps. Keep it as an atomic operation to prevent users from depositing before the funds are transferred from the old YieldSource to the new one.
 
 
-## [H-04]: 
+## [H-04]: transferFunds 有被套利的风险
 
 **Severity**: High
 
-**Location**: `SwappableYieldSource.sol` 中的 `swapYieldSource()` 和 `_setYieldSource()`
+**Location**: `SwappableYieldSource.sol` 中的 `transferFunds()` : L296-L300
 
 **Description**: 
-
+`transferFunds()` 里面只有检查收益源地址和原来的是否不一致 `_requireDifferentYieldSource(_yieldSource)`，并没有检查收益源的代币是否和原来一致，假设新收益源地址和旧的收益源地址的代币不一致，且价值也不一致，转移相同数量的代币后仍有剩余价值停留在 `SwappableYieldSource` 中， 那么 Owner 或者 AssetManager 可以通过 `transferERC20()` 把剩余在 `SwappableYieldSource` 的余额转走
 
 **Impact**: 
-
+用户资金丢失，部分资金可以被 Owner 或者 AssetManager 转走
 
 **Root Cause**: 
-
+`transferFunds()` 缺少收益源代币检查，当代币价值不一致时，剩余资金可以停留在 `SwappableYieldSource` 中
 
 **My POC Walkthrough (optional)**：[我的POC思路]
 
 
 **Fix**: 
-
+删除 `transferFunds()` 外部调用 ，先通过 `_setYieldSource()` 内部调用检查收益源代币地址一致并且设置新的收益源地址，然后通过 `_transferFunds()` 内部调用转移资金到新的收益源地址。
 
 **Code (Vulnerable & Fixed)**:
 ```solidity
+// Vulnerable
+  /// @notice Transfer funds from specified yield source to current yield source.
+  /// @dev We only verify it is a different yield source in the public function cause we already check for it in `_setYieldSource` function.
+  /// @param _yieldSource Yield source address to transfer funds from.
+  /// @param amount Amount of funds to transfer from passed yield source to current yield source.
+  /// @return true if operation is successful.
+  function transferFunds(IYieldSource _yieldSource, uint256 amount) external onlyOwnerOrAssetManager returns (bool) {
+    _requireDifferentYieldSource(_yieldSource);
+    _transferFunds(_yieldSource, amount);
+    return true;
+  }
+
+// Fixed
 
 ```
 
 **English Takeaway**:
+Keep checking that the deposit token is the same when the owner or the asset manager calls _transferFunds().
 
 
-
-## [H-05]: 
+## [H-05]: transferERC20 可以转走包括收益源代币在内的所有代币
 
 
 **Severity**: High
 
 
-**Location**: `SwappableYieldSource.sol` 中的 `swapYieldSource()` 和 `_setYieldSource()`
+**Location**: `SwappableYieldSource.sol` 中的  `transferERC20()`: L323-L329
 
 
 **Description**: 
-
+ `transferERC20()` 只检查了转账的代币是否与收益源地址不一致，并没有检查是否和收益源代币的地址不一致，假设收益源代币地址一致，然后出现收益源代币停留在 `SwappableYieldSource` 中的情况（比如由于gas不足，设置完新收益源地址后，不能及时的把资金转移到新的收益源地址），那么 Owner 或者 AssetManager 可以转走停留在 `SwappableYieldSource` 中的收益源代币
 
 **Impact**: 
-
+用户资金丢失，资金可以被 Owner 或者 AssetManager 转走
 
 **Root Cause**: 
-
+`transferERC20()` 缺少收益源代币检查
 
 **My POC Walkthrough (optional)**：[我的POC思路]
 
 
 **Fix**: 
-
+`transferERC20()` 添加收益源代币检查，确保 Owner 或者 AssetManager 不能转走收益源代币，只能转移与收益源不相关的代币
 
 **Code (Vulnerable & Fixed)**:
 ```solidity
+// Vulnerable
+  /// @notice Transfer ERC20 tokens other than the yield source's tokens held by this contract to the recipient address.
+  /// @dev This function is only callable by the owner or asset manager.
+  /// @param erc20Token ERC20 token to transfer.
+  /// @param to Recipient of the tokens.
+  /// @param amount Amount of tokens to transfer.
+  /// @return true if operation is successful.
+  function transferERC20(IERC20Upgradeable erc20Token, address to, uint256 amount) external onlyOwnerOrAssetManager returns (bool) {
+    require(address(erc20Token) != address(yieldSource), "SwappableYieldSource/yield-source-token-transfer-not-allowed");
+    erc20Token.safeTransfer(to, amount);
+    emit TransferredERC20(msg.sender, to, amount, erc20Token);
+    return true;
+  }
+}
 
+// Fixed
+  /// @notice Transfer ERC20 tokens other than the yield source's tokens held by this contract to the recipient address.
+  /// @dev This function is only callable by the owner or asset manager.
+  /// @param erc20Token ERC20 token to transfer.
+  /// @param to Recipient of the tokens.
+  /// @param amount Amount of tokens to transfer.
+  /// @return true if operation is successful.
+  function transferERC20(IERC20Upgradeable erc20Token, address to, uint256 amount) external onlyOwnerOrAssetManager returns (bool) {
+    require(address(erc20Token) != address(yieldSource), "SwappableYieldSource/yield-source-token-transfer-not-allowed");
+    require(address(erc20Token) != yieldSource.depositToken(), "SwappableYieldSource/different-deposit-token");
+    erc20Token.safeTransfer(to, amount);
+    emit TransferredERC20(msg.sender, to, amount, erc20Token);
+    return true;
+  }
+}
 ```
 
 **English Takeaway**:
-
+The erc20Token token must be verified to be different from the deposit token, which can prevent the owner or asset manager from transferring funds by calling transferERC20().
 
 
 ## Medium Risk Findings
