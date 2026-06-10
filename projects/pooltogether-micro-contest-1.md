@@ -216,27 +216,29 @@ The erc20Token token must be verified to be different from the deposit token, wh
 
 **Severity**: Medium
 
-**Location**: [合约文件:行号 或 函数名]
+**Location**: `OwnableUpgradeable.sol` 中的  `transferERC20()`: L69-L75
 
-**Description**: [用自己的话描述]
+**Description**: 在 `@openzeppelin/contracts-upgradeable": "3.4.0"` 版本中的 `OwnableUpgradeable.sol`，转移所有权只需要一步，Owner通过调用 `transferOwnership()` 传入一个新地址，就会直接更换到新的Owner，它这个函数只检查 `newOwner != address(0)` ,但不会检查这地址是否是正确的，这实际非常危险，因为Owner的权限非常大，可以设置新的收益源地址、可以转移收益收益源的资金到新的收益源、可以随意转移额外收入的代币、同时还可以转移新的Owner，以上所有的功能的都必须通过Owner才能操作，假设在转移新Owner的过程中，输入了错误的地址，或者Owner无意调用了 `renounceOwnership()` 那么相当于Owner的所有权权限丢失，上述的所有功能都失效了，只能通过重新部署合约才能恢复，并且所有用户都需要同步转移，这会导致用户对此项目失去信心
+在OpenZeppelin v4.8.0版本之后，首次新增​ `Ownable2Step` 及 `Ownable2StepUpgradeable`，直接使用该库就可以实现两步双重确认，安全性更高
 
-**Impact**: [后果]
+**Impact**: 所有权丢失，所有onlyOwner修饰符的函数全部无法调用
 
-**Root Cause**: [一句话原因]
+**Root Cause**: Owner的所有权转移只有一步，且还可以放弃所有权
 
 **My POC Walkthrough (optional)**：[我的POC思路]
 
 **Fix**: [修复方式]
+删除 `renounceOwnership()` 函数，避免出现错误的调用丢失所有权
+使用新版的 `Ownable2StepUpgradeable.sol` 实现双重确认
 
 **Code (Vulnerable & Fixed)**:
 ```solidity
 // Vulnerable
 
 // Fixed
-
 ```
 
-**English Takeaway**: [1句英文总结]
+**English Takeaway**: It is very risky when you transfer ownership in one step. If an incorrect address is used accidentally, that will make all the onlyOwner functions unusable forever.
 
 ## Low Risk Findings
 
