@@ -1,6 +1,6 @@
 ---
 type: knowledge-note
-topic: SafeERC20Upgradeable
+topic: safeApprove vs safeIncreaseAllowance
 date: 2026-06-11
 status: completed
 ---
