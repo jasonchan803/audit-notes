@@ -71,14 +71,12 @@ status: [in-progress/completed]
 
 ---
 type: project-note
-project: [项目名称]
-audit-source: [Code4rena / OpenZeppelin / 其他]
+project: [Project Name]
+audit-source: [Code4rena / OpenZeppelin / Other]
 date: YYYY-MM-DD
 tags: [tag1, tag2]
 status: [in-progress/completed]
 ---
-
-# [Project Name] Audit Learning Notes
 
 ## Project Brief
 [用一两句话说清楚这个项目是做什么的]
