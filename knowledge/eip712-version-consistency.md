@@ -1,3 +1,10 @@
+---
+type: knowledge-note
+topic: EIP-712
+date: 2026-05-25
+status: completed
+---
+
 ## 审计 Note：EIP-712 版本一致性（ANVL Token 新旧部署）
 
 **来源**：Anvil Protocol Diff Audit
