@@ -39,5 +39,5 @@ _mAsset.safeIncreaseAllowance(_savings, type(uint256).max - _allowance);
 OpenZeppelin 自 v4.x 起已经弃用 safeApprove，推荐使用 safeIncreaseAllowance / safeDecreaseAllowance。理解其设计原因（防止 approve 竞态条件）比记忆函数名更重要。
 
 **为什么值得记录**：
-1.这是 ERC20 授权机制中一个经典的安全陷阱，许多老项目或新手仍会踩坑。
-2.学会区分“初始设置授权”和“增加现有授权”的不同安全要求，可迁移到其他需要谨慎处理状态更新的场景。
+1. 这是 ERC20 授权机制中一个经典的安全陷阱，许多老项目或新手仍会踩坑。
+2. 学会区分“初始设置授权”和“增加现有授权”的不同安全要求，可迁移到其他需要谨慎处理状态更新的场景。
