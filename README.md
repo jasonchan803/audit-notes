@@ -3,8 +3,12 @@
 My personal notes for smart contract audit learning.
 
 ## Structure
-- `/low` - Low severity vulnerabilities
-- `/medium` - Medium severity vulnerabilities
+- `/gas-optimization` - Notes on gas-efficient patterns and practices 
+- `/knowledge` - General security concepts, design patterns, and reusable knowledge 
+- `/low` - Low severity and informational vulnerabilities from audit reports
+- `/medium` - Medium severity vulnerabilities from audit reports
+- `/projects` - Full project audit notes containing vulnerabilities of mixed severities
+- `/templates` - Reusable markdown templates for notes and reports
 
 ## Progress
 - 2026-05-12: Created repository, start learning.
