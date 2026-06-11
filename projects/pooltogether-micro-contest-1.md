@@ -7,8 +7,6 @@ tags: [yield-source, permission, transfer, rug-pull]
 status: in-progress
 ---
 
-# PoolTogether Micro Contest #1 Audit Learning Notes
-
 ## Project Brief
 PoolTogether 是一个无损彩票协议。用户存入 DAI 等资产，利息汇入奖池，每周开奖一次。本审计针对其收益源可切换模块 `SwappableYieldSource`。
 
