@@ -238,6 +238,18 @@ The erc20Token token must be verified to be different from the deposit token, wh
 
 **English Takeaway**: It is very risky when you transfer ownership in one step. If an incorrect address is used accidentally, that will make all the onlyOwner functions unusable forever.
 
+### [M-02] 收费/通缩的代币在转账过程中会导致实际金额丢失
+
+See detailed note: [`knowledge/handle-fee-on-transfer-tokens.md`](../knowledge/handle-fee-on-transfer-tokens.md)
+
+**English Takeaway**: The `supplyTokenTo()` function assumes the transferred amount equals the `amount` parameter, which fails for tokens with transfer fees or rebasing mechanisms. The fix is to compute actual received balance.
+
+### [M-03] 收费/通缩的代币在转账过程中会导致实际金额丢失
+
+See detailed note: [`knowledge/handle-fee-on-transfer-tokens.md`](../knowledge/handle-fee-on-transfer-tokens.md)
+
+**English Takeaway**: The `supplyTokenTo()` function assumes the transferred amount equals the `amount` parameter, which fails for tokens with transfer fees or rebasing mechanisms. The fix is to compute actual received balance.
+
 ## Low Risk Findings
 
 ### [L-01]: 
