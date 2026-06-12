@@ -1,7 +1,7 @@
 ---
 type: knowledge-note
 topic: EIP-712
-date: 2026-05-25
+date: 2026-05-26
 status: completed
 ---
 
