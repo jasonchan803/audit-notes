@@ -250,6 +250,50 @@ See detailed note: [`knowledge/handle-fee-on-transfer-tokens.md`](../knowledge/h
 
 **English Takeaway**: The `supplyTokenTo()` function assumes the transferred amount equals the `amount` parameter, which fails for tokens with transfer fees or rebasing mechanisms. The fix is to compute actual received balance.
 
+### [M-04] 切换新YieldSource后，旧YieldSource仍有无限授权
+
+**Severity**: Medium
+
+**Location**: `SwappableYieldSource.sol`
+
+**Description**: 在切换新的收益源之后，旧的收益源由于没有取消授权，仍拥有 `SwappableYieldSource.sol` 无限的授权额度，假设旧的收益源出现漏洞被恶意利用或者出现私钥被盗等情况，资金就有可能出现严重的损失
+
+**Impact**: 资金被旧的收益源全部转走
+
+**Root Cause**: 由于旧的收益源在切换新的收益源后没有取消授权
+
+**My POC Walkthrough (optional)**：[我的POC思路]
+
+**Fix**: 在切换新收益源的时候同时取消旧收益源所有的授权
+
+**Code (Vulnerable & Fixed)**:
+```solidity
+// Vulnerable
+  function swapYieldSource(IYieldSource _newYieldSource) external onlyOwnerOrAssetManager returns (bool) {
+    IYieldSource _currentYieldSource = yieldSource;
+    uint256 balance = _currentYieldSource.balanceOfToken(address(this));
+
+    _setYieldSource(_newYieldSource);
+    _transferFunds(_currentYieldSource, balance);
+
+    return true;
+  }
+
+// Fixed
+  function swapYieldSource(IYieldSource _newYieldSource) external onlyOwnerOrAssetManager returns (bool) {
+    IYieldSource _currentYieldSource = yieldSource;
+    uint256 balance = _currentYieldSource.balanceOfToken(address(this));
+
+    _setYieldSource(_newYieldSource);
+    _transferFunds(_currentYieldSource, balance);  // 先转移资金
+    // 转移成功后，撤销对旧收益源的授权
+    IERC20Upgradeable(_currentYieldSource.depositToken()).safeApprove(address(_currentYieldSource), 0);   
+    return true;
+  }
+```
+
+**English Takeaway**: Recommend decreasing approval after swapping the yield source.
+
 ## Low Risk Findings
 
 ### [L-01]: 
