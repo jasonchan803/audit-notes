@@ -214,7 +214,7 @@ The erc20Token token must be verified to be different from the deposit token, wh
 
 **Severity**: Medium
 
-**Location**: `OwnableUpgradeable.sol` 中的  `transferERC20()`: L69-L75
+**Location**: `OwnableUpgradeable.sol` 中的 `transferOwnership()`
 
 **Description**: 在 `@openzeppelin/contracts-upgradeable": "3.4.0"` 版本中的 `OwnableUpgradeable.sol`，转移所有权只需要一步，Owner通过调用 `transferOwnership()` 传入一个新地址，就会直接更换到新的Owner，它这个函数只检查 `newOwner != address(0)` ,但不会检查这地址是否是正确的，这实际非常危险，因为Owner的权限非常大，可以设置新的收益源地址、可以转移收益收益源的资金到新的收益源、可以随意转移额外收入的代币、同时还可以转移新的Owner，以上所有的功能的都必须通过Owner才能操作，假设在转移新Owner的过程中，输入了错误的地址，或者Owner无意调用了 `renounceOwnership()` 那么相当于Owner的所有权权限丢失，上述的所有功能都失效了，只能通过重新部署合约才能恢复，并且所有用户都需要同步转移，这会导致用户对此项目失去信心
 在OpenZeppelin v4.8.0版本之后，首次新增​ `Ownable2Step` 及 `Ownable2StepUpgradeable`，直接使用该库就可以实现两步双重确认，安全性更高
