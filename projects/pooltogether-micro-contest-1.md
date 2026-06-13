@@ -296,7 +296,13 @@ See detailed note: [`knowledge/handle-fee-on-transfer-tokens.md`](../knowledge/h
 
 ## Low Risk Findings
 
-### [L-01]: 
+### [L-01] 初始化函数可以被抢跑
+
+See detailed note: [`knowledge/initialization-frontrunning.md`](../knowledge/initialization-frontrunning.md)
+
+**English Takeaway**: The `initialize()` function can be front-run if that function uses a public modifier and is not done atomically with creation.
+
+### [L-02]: 
 
 **Severity**: [Critical/High/Medium/Low/Informational]
 
