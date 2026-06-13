@@ -7,7 +7,7 @@ status:	completed
 
 ## 初始化函数能被抢跑
 
-**来源**：PoolTogether Micro Contest – SwappableYieldSource 审计 (L-03)
+**来源**：PoolTogether Micro Contest – SwappableYieldSource 审计 (L-01)
 
 **背景**：
 某些合约使用可升级模式或分离式部署，将初始化逻辑放在一个独立的 `initialize()` 函数中（而非构造函数）。如果该函数是 `public` 或 `external`，且部署后没有立即原子调用，攻击者可以抢跑（front-run），用恶意参数初始化合约，从而获得控制权。
