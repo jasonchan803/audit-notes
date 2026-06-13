@@ -7,7 +7,7 @@ status: completed
 
 ## safeApprove 的误用：为什么不能用来增加授权额度
 
-**来源**：PoolTogether Micro Contest – MStableYieldSource 审计
+**来源**：PoolTogether Micro Contest – MStableYieldSource 审计(M-02)
 
 **背景/场景**：
 合约需要保持对某收益池（Savings）的无限授权（`type(uint256).max`），以便随时将用户的代币存入。当授权额度因部分消耗而降低时，需要有一个紧急函数重新授权到最大值。
