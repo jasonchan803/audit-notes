@@ -20,9 +20,10 @@ My personal notes for smart contract audit learning.
 - 2026-06-11: finished safeApprove-vs-safeIncreaseAllowance knowledage-note.
 - 2026-06-12: finished handle-fee-on-transfer-tokens knowledage-note.
 - 2026-06-12: finished medium risk findings in PoolTogether Micro Contest #1 project-notes.
+- 2026-06-13: finished initialization-frontrunning knowledage-note.
 
 
-## Total numbers of notes：7
+## Total numbers of notes：8
 ## Current stage：First stage(Zero business logic vulnerabilities)
 
 
