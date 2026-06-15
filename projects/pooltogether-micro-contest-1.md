@@ -302,31 +302,54 @@ See detailed note: [`knowledge/initialization-frontrunning.md`](../knowledge/ini
 
 **English Takeaway**: The `initialize()` function can be front-run if that function uses a public modifier and is not done atomically with creation.
 
-### [L-02]: 
+### [L-02]: 缺少0地址检查(部分已修复/误报)
 
-**Severity**: [Critical/High/Medium/Low/Informational]
+####1. `_newYieldSource` 零地址检查（实际已存在）
 
-**Location**: [合约文件:行号 或 函数名]
+- **报告原称**：缺少对 `_newYieldSource` 的零地址检查。
+- **实际代码**：在 `_requireDifferentYieldSource()` 函数（L251-L253）中已包含：
+  ```solidity
+  require(address(_yieldSource) != address(0), "...");
 
-**Description**: [用自己的话描述]
+####2. `MStableYieldSource.sol` L85的零地址检查
 
-**Impact**: [后果]
+**Severity**: Low
 
-**Root Cause**: [一句话原因]
+**Location**: `MStableYieldSource.sol` 中的 `supplyTokenTo()`: L82-L88
+
+**Description**: 在 `supplyTokenTo` 函数中，用户调用时指定 `to` 地址，表示将存款产生的份额记入该地址的余额（imBalances）。由于未对 `to` 地址进行零地址检查，攻击者或用户可能误将 `to` 设为 `address(0)`，导致份额被记录在零地址上。虽然用户的代币已正常存入协议，但对应份额永久无法赎回，造成用户资金损失。
+
+**Impact**: 用户存入的代币无法赎回（因为份额归属 address(0)），导致资产永久锁定在协议中。
+
+**Root Cause**: 缺少0地址检查
 
 **My POC Walkthrough (optional)**：[我的POC思路]
 
-**Fix**: [修复方式]
+**Fix**: 增加0地址检查
 
 **Code (Vulnerable & Fixed)**:
 ```solidity
 // Vulnerable
+    function supplyTokenTo(uint256 mAssetAmount, address to) external override nonReentrant {
+        mAsset.safeTransferFrom(msg.sender, address(this), mAssetAmount);
+        uint256 creditsIssued = savings.depositSavings(mAssetAmount);
+        imBalances[to] += creditsIssued;
+
+        emit Supplied(msg.sender, to, mAssetAmount);
+    }
 
 // Fixed
+    function supplyTokenTo(uint256 mAssetAmount, address to) external override nonReentrant {
+        require(address(to) != address(0)," MStableYieldSource: to address cannot be zero");
+        mAsset.safeTransferFrom(msg.sender, address(this), mAssetAmount);
+        uint256 creditsIssued = savings.depositSavings(mAssetAmount);
+        imBalances[to] += creditsIssued;
 
+        emit Supplied(msg.sender, to, mAssetAmount);
+    }    
 ```
 
-**English Takeaway**:
+**English Takeaway**: Missing zero-address checks may lead to a later revert, gas wastage or even token burn.
 
 
 ## Summary & Takeaways
