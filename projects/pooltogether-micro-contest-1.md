@@ -366,6 +366,17 @@ See detailed note: [`knowledge/initialization-frontrunning.md`](../knowledge/ini
 - 最终修改为使用 `public` 展示出来，有时候最简单的解决方案反而最安全（兼顾了业务与安全）
 - 这个案例告诉我： **审计不只是指出理论风险，同时也要考虑业务逻辑与信任假设**
 
+### L-05 (informational): `_requireYieldSource` does not guarantee valid yield source
+
+**Report claim**: `_requireYieldSource` 这个函数只检查这个收益源是否是0地址、是否有depositToken这个函数不够安全，这样恶意的收益源地址（只要包含depositToken这个函数的）都可以通过这个检查
+
+**Project's response**:项目方也很明确反驳了，本来owner就是治理多签地址，以后也是通过社区投票后确认后，owner就可以直接执行了，因为单一个人也不可能通过地址，需要多人同意后才可以执行切换收益源，在这个过程等于这个地址需要通过多个人的验证通过才去执行通过的，所以其实已经足够安全，不需要额外增加一个白名单验证，这反而增加检查的复杂性同时增加gas的消耗
+
+**My takeaway**:
+- 单独的技术检查不能代替治理和人为检查
+- 在一些极其重要的操作中，真正的安全依赖于（多签治理）而不是代码本身
+- 这个案例告诉我：**审计不只是了解代码本身，而是要明白整个系统是如何运作的**
+
 ## Summary & Takeaways
 - 任何允许管理员单方面转移用户资产的函数都应视为高危，除非有强力缓冲机制。
 - 资金流转时，区分 transfer 和 transferFrom 的使用场景至关重要。
