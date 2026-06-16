@@ -351,6 +351,20 @@ See detailed note: [`knowledge/initialization-frontrunning.md`](../knowledge/ini
 
 **English Takeaway**: Missing zero-address checks may lead to a later revert, gas wastage or even token burn.
 
+## Discussion & Takeaways
+
+### L-03 (informational): `onlyOwner` for `approveMaxAmount()` – a design choice, not a bug
+
+**Report claim**: 这个特权函数使用 `onlyOwner` 的修饰符但其他特权函数却使用 `onlyOwnerOrAssetManager` ，假设 owner 在添加 asset managers 后放弃了合约的所有权那么这个函数也将无法被调用。
+
+**Project's response**:
+- 最初项目方的想法是给函数额外一层安全保护
+- 但经过后面的讨论，他们最终把函数改为 `public` ，因为这个函数只能增加当前收益源地址的授权额度，并不会造成资金的损失，所以可以让任何人在收益源授权额度过低的时候紧急调用，避免其他功能的调用出现问题
+
+**My takeaway**:
+- 不是说每一个特权函数设计不一致就是有风险有漏洞，某些函数就是为了权衡业务与理论风险而有意设计的
+- 最终修改为使用 `public` 展示出来，有时候最简单的解决方案反而最安全（兼顾了业务与安全）
+- 这个案例告诉我： **审计不只是指出理论风险，同时也要考虑业务逻辑与信任假设**
 
 ## Summary & Takeaways
 - 任何允许管理员单方面转移用户资产的函数都应视为高危，除非有强力缓冲机制。
