@@ -300,7 +300,9 @@ See detailed note: [`knowledge/handle-fee-on-transfer-tokens.md`](../knowledge/h
 
 See detailed note: [`knowledge/initialization-frontrunning.md`](../knowledge/initialization-frontrunning.md)
 
-**English Takeaway**: The `initialize()` function can be front-run if that function uses a public modifier and is not done atomically with creation.
+**English Takeaway**: The `initialize()` function can be front-run if that function uses a public modifier and is not done atomically with creation. Even if the success flag is checked, a malicious contract with a fallback() can still pass the validation. Always use high-level calls for interface checks.
+
+
 
 ### [L-02]: 缺少0地址检查(部分已修复/误报)
 
@@ -391,7 +393,7 @@ See detailed note: [`knowledge/initialization-frontrunning.md`](../knowledge/ini
 
     address depositTokenAddress = IYieldSource(_yieldSource).depositToken();
 
-    require(depositTokenAddress != address(0);, "SwappableYieldSource/invalid-yield-source");
+    require(depositTokenAddress != address(0), "SwappableYieldSource/invalid-yield-source");
   }  
 ```
 
