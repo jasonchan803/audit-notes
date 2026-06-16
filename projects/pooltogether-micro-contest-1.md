@@ -351,6 +351,52 @@ See detailed note: [`knowledge/initialization-frontrunning.md`](../knowledge/ini
 
 **English Takeaway**: Missing zero-address checks may lead to a later revert, gas wastage or even token burn.
 
+### [L-07]: `_requireYieldSource` 函数没有检查返回值
+
+**Severity**: Low
+
+**Location**: `SwappableYieldSource.sol` 中的 `_requireYieldSource`: L74-L88
+
+**Description**: `_requireYieldSource` 函数使用了 `staticcall`低级调用的方法去检查地址是否有 `depositToken()` 这个函数，实际上只要该地址有 `fallback()` 函数能正常调用且有返回的数据，那么 `staticcall` 就会返回true和返回fallback非零的数据，即使它没有 `depositToken()` 这个函数，在这样的情况下，就可以通过所有的检查
+
+**Impact**: 恶意的地址可以通过所有的检查，完全依靠多签治理地址确保地址的安全
+
+**Root Cause**: 使用了 `staticcall` 低级调用的方法去检查收益源地址的合法性
+
+**My POC Walkthrough (optional)**：[我的POC思路]
+
+**Fix**:  使用高级调用的方法确保收益源地址的合法性
+
+**Code (Vulnerable & Fixed)**:
+```solidity
+// Vulnerable
+  function _requireYieldSource(IYieldSource _yieldSource) internal view {
+    require(address(_yieldSource) != address(0), "SwappableYieldSource/yieldSource-not-zero-address");
+
+    (, bytes memory depositTokenAddressData) = address(_yieldSource).staticcall(abi.encode(_yieldSource.depositToken.selector));
+
+    bool isInvalidYieldSource;
+
+    if (depositTokenAddressData.length > 0) {
+      (address depositTokenAddress) = abi.decode(depositTokenAddressData, (address));
+
+      isInvalidYieldSource = depositTokenAddress != address(0);
+    }
+
+    require(isInvalidYieldSource, "SwappableYieldSource/invalid-yield-source");
+  }
+// Fixed
+  function _requireYieldSource(IYieldSource _yieldSource) internal view {
+    require(address(_yieldSource) != address(0), "SwappableYieldSource/yieldSource-not-zero-address");
+
+    address depositTokenAddress = IYieldSource(_yieldSource).depositToken();
+
+    require(depositTokenAddress != address(0);, "SwappableYieldSource/invalid-yield-source");
+  }  
+```
+
+**English Takeaway**: `staticcall` is a low-level opcode which cannot ensure that the contract actually has that function.
+
 ## Discussion & Takeaways
 
 ### L-03 (informational): `onlyOwner` for `approveMaxAmount()` – a design choice, not a bug
