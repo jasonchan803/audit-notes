@@ -458,7 +458,7 @@ emit FundsTransferred(_yieldSource, currentBalance);
 **My analysis**:
 - `MStableYieldSource` 合约并没有像 `SwappableYieldSource` 合约中 `transferERC20` 类似的函数，所以意外转入的代币会卡在合约当中
 - 但是在审计报告中的 `Balance of mAsset - total deposited amount of mAsset` 这个建议未必适合，因为加入计算差额的方法会增加复杂性和潜在的漏洞面
-- 所以我会建议 `MStableYieldSource` 合约使用  `SwappableYieldSource` 合约中 `transferERC20` 类似的函数，禁止取出收益源代币，这能避免增加额外的计算风险
+- 所以我会建议 `MStableYieldSource` 合约参考 `SwappableYieldSource` 中的 `transferERC20` 函数，仅允许转出非 `mAsset` 的代币，避免触及用户存款
 
 **My takeaway**: The safest design is often the simplest. Not every "missing function" is worth adding. Some may introduce more risk than they solve.
 
