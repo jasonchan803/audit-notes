@@ -398,6 +398,32 @@ See detailed note: [`knowledge/initialization-frontrunning.md`](../knowledge/ini
 
 **English Takeaway**: `staticcall` is a low-level opcode which cannot ensure that the contract actually has that function. Even if the success flag is checked, a malicious contract with a fallback() can still pass the validation. Always use high-level calls for interface checks.
 
+### [L-10] `FundsTransferred` 事件中的 `amount` 返回的数据可能不准确
+
+**Severity**: Low
+
+**Location**: `SwappableYieldSource.sol` 中的 `_transferFunds()` :L288
+
+**Description**:  `_transferFunds` 函数中的 `FundsTransferred(_yieldSource, _amount)` 使用的是 `_amount` ，但是实际转移的金额是 `currentBalance` ，假设出现 `currentBalance` >= `_amount` 的情况，那么实际转移的金额就应该是 `currentBalance` 而不是 `_amount`
+
+**Impact**:  事件返回的金额数据有误，可能实际转移的金额比事件返回的数据要多
+
+**Root Cause**: `FundsTransferred` 使用了 `_amount`
+
+**My POC Walkthrough (optional)**：[我的POC思路]
+
+**Fix**:  
+使用 `currentBalance` 代替`_amount` 
+
+**Code (Vulnerable & Fixed)**:
+```solidity
+// Before
+emit FundsTransferred(_yieldSource, _amount);
+// After
+emit FundsTransferred(_yieldSource, currentBalance);
+```
+
+**English Takeaway**: Always ensure the logs return exactly correct data.
 
 ## Discussion & Takeaways
 
