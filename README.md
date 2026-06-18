@@ -21,9 +21,11 @@ My personal notes for smart contract audit learning.
 - 2026-06-12: finished handle-fee-on-transfer-tokens knowledage-note.
 - 2026-06-12: finished medium risk findings in PoolTogether Micro Contest #1 project-notes.
 - 2026-06-13: finished initialization-frontrunning knowledage-note.
+- 2026-06-18: finished Don’t sacrifice core logic for low-probability events knowledage-note.
+- 2026-06-18: finished low risk findings in PoolTogether Micro Contest #1 project-notes.
 
 
-## Total numbers of notes：8
+## Total numbers of notes：9
 ## Current stage：First stage(Zero business logic vulnerabilities)
 
 
