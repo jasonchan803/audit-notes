@@ -451,6 +451,17 @@ emit FundsTransferred(_yieldSource, currentBalance);
 - 在一些极其重要的操作中，真正的安全依赖于（多签治理）而不是代码本身
 - 这个案例告诉我：**审计不只是了解代码本身，而是要明白整个系统是如何运作的**
 
+### L-12 (informational): `MStableYieldSource` 增加一个转出其他代币函数
+
+**Report claim**: 当有其他代币意外的转入 `MStableYieldSource` 合约时，这些代币需要一个函数转出，否则永远卡在合约当中无法取出
+
+**My analysis**:
+- `MStableYieldSource` 合约并没有像 `SwappableYieldSource` 合约中 `transferERC20` 类似的函数，所以意外转入的代币会卡在合约当中
+- 但是在审计报告中的 `Balance of mAsset - total deposited amount of mAsset` 这个建议未必适合，因为加入计算差额的方法会增加复杂性和潜在的漏洞面
+- 所以我会建议 `MStableYieldSource` 合约使用  `SwappableYieldSource` 合约中 `transferERC20` 类似的函数，禁止取出收益源代币，这能避免增加额外的计算风险
+
+**My takeaway**: The safest design is often the simplest. Not every "missing function" is worth adding. Some may introduce more risk than they solve.
+
 ## Summary & Takeaways
 - 任何允许管理员单方面转移用户资产的函数都应视为高危，除非有强力缓冲机制。
 - 资金流转时，区分 transfer 和 transferFrom 的使用场景至关重要。
