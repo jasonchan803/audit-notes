@@ -14,7 +14,7 @@ My personal notes for smart contract audit learning.
 - 2026-05-12: Created repository, start learning.
 - 2026-05-14: finished Uniswap-ERC20ETH audit-notes.
 - 2026-05-14: finished BARD-Token audit-notes.
-- 2026-05-25：finished EIP-712 knowledage-note.
+- 2026-05-25: finished EIP-712 knowledage-note.
 - 2026-05-26: finished eip712-version-consistency knowledage-note.
 - 2026-06-09: finished high risk findings in PoolTogether Micro Contest #1 project-notes.
 - 2026-06-11: finished safeApprove-vs-safeIncreaseAllowance knowledage-note.
