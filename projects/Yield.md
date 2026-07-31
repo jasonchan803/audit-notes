@@ -8,7 +8,7 @@ status: in-progress
 ---
 
 ## Project Brief
-Yield是一个固定利息借贷的Defi平台。用户可以存入多种资产作为抵押，借出fytoken并且可以通过池子兑换成对应的base资产，同时用户也可以通过存入对应的base资产买入fytoken，到期后获得固定的利息收益，这个平台集合了借贷、兑换、清算等一系列功能
+Yield是一个固定利率借贷协议。用户存入抵押资产后可以借出fyToken（代表未来固定收益的债权），也可以通过存入base资产买入fyToken，到期后获得固定利息收益。协议集成了借贷、兑换、清算等核心功能。
 
 ## High Risk Findings
 
@@ -93,7 +93,7 @@ Yield是一个固定利息借贷的Defi平台。用户可以存入多种资产�
     }
 ```
 
-**English Takeaway**: You have to keep your minds up when transferring to self or passing the same parameters; it might lead to some vulnerabilities.
+**English Takeaway**: Always validate that from and to are distinct when a function assumes they refer to different entities. Failing to do so can cause accounting errors and asset duplication.
 
 
 ## Medium Risk Findings（仅记录新模式）
