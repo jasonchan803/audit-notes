@@ -18,15 +18,15 @@ Yield是一个固定利息借贷的Defi平台。用户可以存入多种资产�
 
 **Location**: `Cauldron.sol` 中的 `stir()` : L267-L295
 
-**Description**: 用户可以传入相同的地址参数到from和to中，使得 balances[from] = balances[to]，当进行ink和art的单独计算后， balances[from] = balancesFrom 和 balances[to] = balancesTo 等同于同一个value赋值两遍，最后的balancesTo的值会覆盖前面balancesFrom的值
+**Description**: 用户可以传入相同的地址参数到`from`和`to`中，此时 `balances[from]`和`balances[to]`指向同一个存储槽，当进行ink和art的单独计算后， `balances[from] = balancesFrom`和`balances[to] = balancesTo`等同于同一个存储槽赋值两遍，最后的`balancesTo`的值会覆盖前面`balancesFrom`的值
 
-**Impact**: 让这个value凭空增加的抵押物资产，通过重复操作从而掏空协议的抵押物资产
+**Impact**: 攻击者可以通过自我转账凭空增加的抵押物（ink）或债务（art），破坏协议会计系统，可能导致无限增发或坏账。
 
-**Root Cause**:  由于balancesTo才是这个用户最后覆盖的值，当执行balancesFrom.ink -= ink 和 balancesTo.ink += ink时，balancesFrom的值最后会被balancesTo的值覆盖，等同于这个value凭空增加了ink
+**Root Cause**:  由于`balancesTo`才是这个用户最后覆盖的值，当执行`balancesFrom.ink -= ink`和` balancesTo.ink += ink`时，`balancesFrom`的值最后会被`balancesTo`的值覆盖，等同于这个value凭空增加了ink
 
 **My POC Walkthrough (optional)**：[我的POC思路]
 
-**Fix**: 在获取到From和To地址后，需要检查两个value是否相同
+**Fix**: 需要检查`from`和`to`是否相同
 
 **Code (Vulnerable & Fixed)**:
 ```solidity
@@ -66,10 +66,10 @@ Yield是一个固定利息借贷的Defi平台。用户可以存入多种资产�
         auth
         returns (DataTypes.Balances memory, DataTypes.Balances memory)
     {
+        require(from != to, "Cauldron/self-stir-not-allowed");
+
         (DataTypes.Vault memory vaultFrom, , DataTypes.Balances memory balancesFrom) = vaultData(from, false);
         (DataTypes.Vault memory vaultTo, , DataTypes.Balances memory balancesTo) = vaultData(to, false);
-
-        require (vaultFrom != vaultTo, "Different vault");
 
         if (ink > 0) {
             require (vaultFrom.ilkId == vaultTo.ilkId, "Different collateral");
@@ -93,7 +93,7 @@ Yield是一个固定利息借贷的Defi平台。用户可以存入多种资产�
     }
 ```
 
-**English Takeaway**: [1句英文总结]
+**English Takeaway**: You have to keep your minds up when transferring to self or passing the same parameters; it might lead to some vulnerabilities.
 
 
 ## Medium Risk Findings（仅记录新模式）
