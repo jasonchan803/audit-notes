@@ -18,7 +18,7 @@ Yield是一个固定利率借贷协议。用户存入抵押资产后可以借出
 
 **Location**: `Cauldron.sol` 中的 `stir()` : L267-L295
 
-**Description**: 用户可以传入相同的地址参数到`from`和`to`中，此时 `balances[from]`和`balances[to]`指向同一个存储槽，当进行ink和art的单独计算后， `balances[from] = balancesFrom`和`balances[to] = balancesTo`等同于同一个存储槽赋值两遍，最后的`balancesTo`的值会覆盖前面`balancesFrom`的值
+**Description**: 用户可以传入相同的参数到`from`和`to`中，此时 `balances[from]`和`balances[to]`指向同一个存储槽，当进行ink和art的单独计算后， `balances[from] = balancesFrom`和`balances[to] = balancesTo`等同于同一个存储槽赋值两遍，最后的`balancesTo`的值会覆盖前面`balancesFrom`的值
 
 **Impact**: 攻击者可以通过自我转账凭空增加的抵押物（ink）或债务（art），破坏协议会计系统，可能导致无限增发或坏账。
 
