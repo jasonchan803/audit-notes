@@ -4,7 +4,7 @@ project: PoolTogether Micro Contest #1
 audit-source: Code4rena
 date: 2026-06-05
 tags: [yield-source, permission, transfer, rug-pull]
-status: in-progress
+status: completed
 ---
 
 ## Project Brief
