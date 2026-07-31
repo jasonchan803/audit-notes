@@ -26,7 +26,7 @@ My personal notes for smart contract audit learning.
 
 
 ## Total numbers of notes：9
-## Current stage：First stage(Zero business logic vulnerabilities)
+## Current stage：Second stage(Simple logic vulnerabilities)
 
 
 
