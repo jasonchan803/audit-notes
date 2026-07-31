@@ -14,7 +14,7 @@ Yield是一个固定利息借贷的Defi平台。用户可以存入多种资产�
 
 ### [H-01]: `stir` 函数允许自我转账导致余额重复覆盖
 
-**Severity**: [Critical/High/Medium/Low/Informational]
+**Severity**: High
 
 **Location**: `Cauldron.sol` 中的 `stir()` : L267-L295
 
