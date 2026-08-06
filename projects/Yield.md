@@ -16,7 +16,7 @@ Yield是一个固定利率借贷协议。用户存入抵押资产后可以借出
 
 **Severity**: High
 
-**Location**: `Cauldron.sol` 中的 `stir()` : L267-L295
+**Location**: `Cauldron.sol` - `stir()` : L267-295
 
 **Description**: 用户可以传入相同的参数到`from`和`to`中，此时 `balances[from]`和`balances[to]`指向同一个存储槽，当进行ink和art的单独计算后， `balances[from] = balancesFrom`和`balances[to] = balancesTo`等同于同一个存储槽赋值两遍，最后的`balancesTo`的值会覆盖前面`balancesFrom`的值
 
@@ -95,6 +95,23 @@ Yield是一个固定利率借贷协议。用户存入抵押资产后可以借出
 
 **English Takeaway**: Always validate that from and to are distinct when a function assumes they refer to different entities. Failing to do so can cause accounting errors and asset duplication.
 
+### [H-02]: 权限标识符ROOT与函数签名共享命名空间（0x00000000 碰撞）
+
+**Severity**: High
+
+**Location**: `AccessControl.sol` - `auth()`: L90-93、`Ladle.sol` - `_moduleCall`: L588-596
+
+**Description**: 权限标识符ROOT的函数选择器为0x00000000，如果新模块的函数选择器也刚好是0x00000000，那么在管理员不知情的情况下把这个新模块函数授权给某些地址，相当于让这些地址意外的获取到ROOT管理员权限
+
+**Impact**: 有可能在管理员不知情的情况下把ROOT权限授权给其他地址，导致这些地址获得完整的系统控制权
+
+**Root Cause**: 权限标识符 ROOT 与函数签名共享 bytes4 命名空间。当新增模块的函数选择器恰好为 0x00000000 时，对 0x00000000 这个 role 的授权，会同时作用于该函数，导致意外获得 ROOT 权限。
+
+**Fix**:
+- 代码层面：使用独立的命名空间（如 `bytes32` 哈希）作为权限标识符，或限制 `grantRole` 不能授予 `ROOT`。
+- 流程层面：通过 CI 自动化检查新增模块的函数签名，避免与 `ROOT` 碰撞。
+
+**English Takeaway**: Never use function selectors as permission identifiers; they share a namespace with any future function that may be added to the system.
 
 ## Medium Risk Findings（仅记录新模式）
 
