@@ -12,7 +12,7 @@ Yield是一个固定利率借贷协议。用户存入抵押资产后可以借出
 
 ## High Risk Findings
 
-### [H-01]: `stir` 函数允许自我转账导致余额重复覆盖
+## [H-01]: `stir` 函数允许自我转账导致余额重复覆盖
 
 **Severity**: High
 
@@ -95,7 +95,7 @@ Yield是一个固定利率借贷协议。用户存入抵押资产后可以借出
 
 **English Takeaway**: Always validate that from and to are distinct when a function assumes they refer to different entities. Failing to do so can cause accounting errors and asset duplication.
 
-### [H-02]: 权限标识符ROOT与函数签名共享命名空间（0x00000000 碰撞）
+## [H-02]: 权限标识符ROOT与函数签名共享命名空间（0x00000000 碰撞）
 
 **Severity**: High
 
@@ -114,7 +114,7 @@ Yield是一个固定利率借贷协议。用户存入抵押资产后可以借出
 **English Takeaway**: Never use function selectors as permission identifiers; they share a namespace with any future function that may be added to the system.
 
 
-### [H-03] `log_2` 函数中 `>=` 与 `>` 的差异导致精度误差
+## [H-03] `log_2` 函数中 `>=` 与 `>` 的差异导致精度误差
 
 **Severity**: High
 
