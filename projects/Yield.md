@@ -113,6 +113,23 @@ Yield是一个固定利率借贷协议。用户存入抵押资产后可以借出
 
 **English Takeaway**: Never use function selectors as permission identifiers; they share a namespace with any future function that may be added to the system.
 
+
+### [H-03] `log_2` 函数中 `>=` 与 `>` 的差异导致精度误差
+
+**Severity**: High
+
+**Location**: `Exp64x64.sol` – `log_2()` 函数中的位运算分支
+
+**Description**: `log_2` 函数用于 YieldMath 核心定价计算。对比 V1 和 V2 版本发现，在边界条件判断中，V1 使用 `>=`，V2 使用 `>`，导致当 `b` 恰好等于 `0x100000000000000000000000000000000` 时，两个版本行为不一致。该偏差会传播到所有依赖 `log_2` 的定价计算中。
+
+**Impact**: 定价偏差可能导致套利、资金缓慢流失。
+
+**Root Cause**: 版本迭代中无意识修改了比较符号（`>=` → `>`），破坏了数学一致性。
+
+**Fix**: 统一使用正确的比较符号（根据数学定义确定，建议使用 V1 的 `>=` 或重新验证）。
+
+**English Takeaway**: Even a single-character difference in core math library can cause severe pricing errors; always compare code versions for unintended changes.
+
 ## Medium Risk Findings（仅记录新模式）
 
 ### [M-01]: 
