@@ -130,6 +130,107 @@ Yield是一个固定利率借贷协议。用户存入抵押资产后可以借出
 
 **English Takeaway**: Even a single-character difference in core math library can cause severe pricing errors; always compare code versions for unintended changes.
 
+### [H-04]: `Ladle._redeem` 通过 `batch` 暴露，允许盗取 Ladle 持有的 fyToken
+
+**Severity**: High
+
+**Location**: `Ladle.sol` - `_redeem()`函数（通过`batch`调用）: L211-214
+
+**Description**: Ladle._redeem 是 private 函数，但通过 batch 操作暴露给任何外部调用者。该函数没有进行权限检查，允许任何人调用 batch 并传入 Operation.REDEEM，将 Ladle 持有的所有 fyToken 赎回并转出底层资产。当 wad = 0 时，且fytoken系列到期后，调用 fyToken.redeem(to, 0) 会赎回 fyToken.balanceOf(address(this)))，即 Ladle 持有的全部 fyToken。
+
+**Impact**: 攻击者可以一次性盗取 Ladle 持有的所有 fyToken，将其转换为底层资产（如 DAI）并转给自己。如果 Ladle 中有大量 fyToken，会导致协议资金损失。
+
+**Root Cause**: batch 允许公开调用内部操作，且 _redeem 缺少对调用者或意图的验证。
+
+**My POC Walkthrough (optional)**：
+```solidity
+// 攻击者调用 Ladle.batch
+bytes12 vaultId = bytes12(0); // 任意值
+bytes[] memory data = new bytes[](1);
+data[0] = abi.encode(
+    Ladle.Operation.REDEEM,
+    abi.encode(
+        seriesId,       // 任意有效 seriesId
+        attacker,       // 攻击者地址
+        0               // wad = 0，意味着赎回全部
+    )
+);
+ladle.batch(operations, data);
+// Ladle 持有的 fyToken 被赎回，底层资产转给攻击者
+```
+
+**Fix**: 
+- 为 _redeem 添加权限检查，仅允许 auth 角色（如治理或协议自身）调用。
+- 或者移除 Operation.REDEEM 分支，限制通过 batch 调用。
+- 确保 Ladle 不会长期持有用户资产，或对持有的资产进行保护。
+其实以上方法都不太好，因限制了这个功能，等于用户也没法赎回他们的资产，其实最重要的是要确保这个函数不能滥用，必须把这个函数打包到其他功能中一起使用，不要让资金停留在Ladle当中，保持原子性这才最优解，batch虽然自由度很高，但同时也带了很多隐患
+
+**Code (Vulnerable & Fixed)**:
+```solidity
+// Vulnerable (batch 允许任何人调用 _redeem)
+function _redeem(IFYToken fyToken, address to, uint256 wad) private returns (uint256) {
+    return fyToken.redeem(to, wad != 0 ? wad : fyToken.balanceOf(address(this)));
+}
+
+// Fixed (添加权限修饰符)
+function _redeem(IFYToken fyToken, address to, uint256 wad) private auth returns (uint256) {
+    // 或者移除该操作，或仅允许特定模块调用
+}
+```
+
+**English Takeaway**: Any public function that allows arbitrary calls to internal logic must enforce proper access control, especially when handling assets held by the contract.
+
+### [H-05]: `batch` 操作非原子性，允许攻击者抢跑盗取用户存入 Ladle 的 fyToken
+
+**Severity**: High
+
+**Location**: `Ladle.sol` – `batch()` 函数及 `Operation.REDEEM` 分支
+
+**Description**: `Ladle.batch` 允许用户将多个操作打包执行，但**不强制原子性**。用户可能先调用 `_transferToFYToken` 将 fyToken 转入 Ladle，再调用 `_redeem` 赎回。在两笔交易之间，用户的 fyToken 停留在 Ladle 中，攻击者可通过监控 mempool 发现用户的存入操作，并在用户执行赎回之前调用 `batch` + `_redeem(fyToken, attacker, 0)` 将资产盗走。
+
+**Impact**:
+- 用户预期通过两步操作完成赎回，但资产在中间状态被攻击者拦截。
+- 攻击者无需依赖 Ladle 意外持有资产，只需等待正常用户操作即可触发。
+- 用户资金直接损失，且难以追回。
+
+**Root Cause**: 
+1. `batch` 中的 `REDEEM` 操作没有与“资产存入”绑定，允许非原子执行。
+2. `_redeem` 缺少权限检查，允许任何人消耗 Ladle 持有的 fyToken。
+3. 协议没有为“中间状态”提供保护机制（如锁定或权限隔离）。
+
+**My POC Walkthrough (optional)**：
+1. 用户调用 `_transferToFYToken(fyToken, 1000)`，将 1000 fyToken 转入 Ladle。
+2. 攻击者监控 mempool，发现该交易。
+3. 攻击者在用户执行赎回之前，调用 `batch` + `_redeem(fyToken, attacker, 0)`。
+4. Ladle 中的 1000 fyToken 被赎回为底层资产（如 DAI），转给攻击者。
+5. 用户后续的赎回交易失败（Ladle 中已无余额），资金被盗。
+
+**Fix**: 
+1. **强制原子性**：要求存入和赎回必须在同一 `batch` 中完成，或设计为单笔交易。
+2. **权限隔离**：为 `_redeem` 添加权限控制，仅允许原存入者或 `auth` 角色调用。
+3. **临时锁定**：用户存入 fyToken 时，可以将其锁定，仅允许该用户赎回。
+
+**Code (Vulnerable & Fixed)**:
+```solidity
+// Vulnerable (任何人都可消耗 Ladle 持有的 fyToken)
+function _redeem(IFYToken fyToken, address to, uint256 wad) private returns (uint256) {
+    return fyToken.redeem(to, wad != 0 ? wad : fyToken.balanceOf(address(this)));
+}
+
+// Fixed (限制调用者)
+mapping(bytes6 => address) public fyTokenDepositor;
+function _transferToFYToken(bytes6 seriesId, uint256 wad) private {
+    fyTokenDepositor[seriesId] = msg.sender;  // 记录存款人
+    IERC20(fyToken).safeTransferFrom(msg.sender, address(this), wad);
+}
+function _redeem(IFYToken fyToken, address to, uint256 wad) private {
+    require(msg.sender == fyTokenDepositor[seriesId], "Only depositor");
+    // ...
+}
+```
+
+**English Takeaway**: Batch operations must enforce atomicity or isolate intermediate states. Any gap between two dependent transactions is a window for front-running attacks.
+
 ## Medium Risk Findings（仅记录新模式）
 
 ### [M-01]: 
