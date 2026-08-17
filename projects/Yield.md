@@ -130,7 +130,7 @@ Yield是一个固定利率借贷协议。用户存入抵押资产后可以借出
 
 **English Takeaway**: Even a single-character difference in core math library can cause severe pricing errors; always compare code versions for unintended changes.
 
-### [H-04]: `Ladle._redeem` 通过 `batch` 暴露，允许盗取 Ladle 持有的 fyToken
+## [H-04]: `Ladle._redeem` 通过 `batch` 暴露，允许盗取 Ladle 持有的 fyToken
 
 **Severity**: High
 
@@ -163,7 +163,7 @@ ladle.batch(operations, data);
 - 为 _redeem 添加权限检查，仅允许 auth 角色（如治理或协议自身）调用。
 - 或者移除 Operation.REDEEM 分支，限制通过 batch 调用。
 - 确保 Ladle 不会长期持有用户资产，或对持有的资产进行保护。
-其实以上方法都不太好，因限制了这个功能，等于用户也没法赎回他们的资产，其实最重要的是要确保这个函数不能滥用，必须把这个函数打包到其他功能中一起使用，不要让资金停留在Ladle当中，保持原子性这才最优解，batch虽然自由度很高，但同时也带了很多隐患
+- 其实以上方法都不太好，因限制了这个功能，等于用户也没法赎回他们的资产，其实最重要的是要确保这个函数不能滥用，必须把这个函数打包到其他功能中一起使用，不要让资金停留在Ladle当中，保持原子性这才最优解，batch虽然自由度很高，但同时也带了很多隐患
 
 **Code (Vulnerable & Fixed)**:
 ```solidity
@@ -180,7 +180,7 @@ function _redeem(IFYToken fyToken, address to, uint256 wad) private auth returns
 
 **English Takeaway**: Any public function that allows arbitrary calls to internal logic must enforce proper access control, especially when handling assets held by the contract.
 
-### [H-05]: `batch` 操作非原子性，允许攻击者抢跑盗取用户存入 Ladle 的 fyToken
+## [H-05]: `batch` 操作非原子性，允许攻击者抢跑盗取用户存入 Ladle 的 fyToken
 
 **Severity**: High
 
