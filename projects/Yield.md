@@ -233,21 +233,26 @@ function _redeem(IFYToken fyToken, address to, uint256 wad) private {
 
 ## Medium Risk Findings（仅记录新模式）
 
-### [M-01]: 
+### [M-01]: vaultID 可被抢注导致用户创建 vault 失败
 
-**Severity**: [Critical/High/Medium/Low/Informational]
+**Severity**: Medium
 
-**Location**: [合约文件:行号 或 函数名]
+**Location**: `Cauldron.sol` – `build()` 函数，`Ladle.sol` – `batch()` 中的 `BUILD` 操作
 
-**Description**: [用自己的话描述]
+**Description**: 用户创建 vault 时需要指定 `vaultId`。攻击者可监控 mempool，在用户交易之前使用相同的 `vaultId` 调用 `batch` + `build` 抢先创建。由于 `Cauldron.build()` 会检查 `vaultId` 是否已被使用（L180），用户交易将失败。
 
-**Impact**: [后果]
+**Impact**: 攻击者可无限干扰协议的正常用户操作，导致协议可用性下降，影响用户信任。虽不涉及资金损失，但属于有效的 DoS 攻击。
 
-**Root Cause**: [一句话原因]
+**Root Cause**: `vaultId` 由用户指定而非协议分配，导致存在“命名空间抢注”风险。
 
-**My POC Walkthrough (optional)**：[我的POC思路]
+**My POC Walkthrough (optional)**：
+1. Alice 提交 batch 交易创建 vault，`vaultId = 0x123...`
+2. Eve 监控 mempool，用更高 gas 提交仅包含 `build(0x123...)` 的 batch 交易
+3. Eve 抢跑成功，Alice 的交易因 `vaultId` 已存在而回滚
 
-**Fix**: [修复方式]
+**Fix**:
+1. 由协议自动分配 `vaultId`（需要调整 batch/caching 逻辑）。
+2. 在 `batch` 中检测异常操作模式（如仅包含 `build` 的单操作批次），自动回滚。
 
 **Code (Vulnerable & Fixed)**:
 ```solidity
@@ -258,7 +263,7 @@ function _redeem(IFYToken fyToken, address to, uint256 wad) private {
 [修复代码]
 ```
 
-**English Takeaway**: [1句英文总结]
+**English Takeaway**: When users can choose their own resource identifiers, attackers can front-run and reserve them, causing denial of service.
 
 
 ## Low Risk Findings（仅记录从未见过的）
