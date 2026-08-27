@@ -3,7 +3,7 @@ type: project-note
 project: Yield
 audit-source: Code4rena
 date: 2026-07-31
-tags: [tag1, tag2]
+tags: [atomicity, state-exposure]
 status: in-progress
 ---
 
