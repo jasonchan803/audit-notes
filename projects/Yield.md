@@ -270,11 +270,11 @@ function _redeem(IFYToken fyToken, address to, uint256 wad) private {
 
 **My POC Walkthrough (optional)**：
 1. Alice的金库被第一次扣押，但超过时间后仍未结清债务。
-2. Alice的金库被二次扣押，再次调用`Witch.grab()`后，`vaultOwners[vaultId]`变成`Witch`合约本身。
+2. Alice的金库被二次扣押，再次调用 `Witch.grab()` 后，`vaultOwners[vaultId]` 变成 `Witch` 合约本身。
 3. Alice的金库债务完全结清，Alice无法取回金库中剩余的抵押物。
 
 **Fix**: 
-- 在`Witch.grab()`添加额外的检查，当`vaultOwners[vaultId]`已存在数据时，不再重复调用`vaultOwners[vaultId] = vault.owner`。
+在 `Witch.grab()` 添加额外的检查，当 `vaultOwners[vaultId]` 已存在数据时，不再重复调用 `vaultOwners[vaultId] = vault.owner` 。
 
 **Code (Vulnerable & Fixed)**:
 ```solidity
