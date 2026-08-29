@@ -254,16 +254,47 @@ function _redeem(IFYToken fyToken, address to, uint256 wad) private {
 1. 由协议自动分配 `vaultId`（需要调整 batch/caching 逻辑）。
 2. 在 `batch` 中检测异常操作模式（如仅包含 `build` 的单操作批次），自动回滚。
 
+**English Takeaway**: When users can choose their own resource identifiers, attackers can front-run and reserve them, causing denial of service.
+
+### [M-02]: `witch.grab()` 二次调用会导致金库原有的所有权丢失
+
+**Severity**: Medium
+
+**Location**: `Witch.sol` - `grab()`函数 : L49-54
+
+**Description**: 由于第一次调用`Witch.grab()`时，金库的所有权已经转移给 Witch，再次调用`Witch.grab()`时，`vaultOwners[vaultId] = vault.owner` 会把原有的 owner 覆盖，那么即使债务完全还清，原 owner 也无法取回剩余的抵押物。
+
+**Impact**: 当金库债务被全额清偿后，剩余的抵押物因原所有者信息丢失而无法退还给原用户。
+
+**Root Cause**: `vaultOwners[vaultId] = vault.owner` 二次调用导致原数据被覆盖。
+
+**My POC Walkthrough (optional)**：
+1. Alice的金库被第一次扣押，但超过时间后仍未结清债务。
+2. Alice的金库被二次扣押，再次调用`Witch.grab()`后，`vaultOwners[vaultId]`变成`Witch`合约本身。
+3. Alice的金库债务完全结清，Alice无法取回金库中剩余的抵押物。
+
+**Fix**: 在`Witch.grab()`添加额外的检查，当`vaultOwners[vaultId]`已存在数据时，不再重复调用`vaultOwners[vaultId] = vault.owner`。
+
 **Code (Vulnerable & Fixed)**:
 ```solidity
 // Vulnerable
-[漏洞代码]
+    function grab(bytes12 vaultId) public {
+        DataTypes.Vault memory vault = cauldron.vaults(vaultId);
+        vaultOwners[vaultId] = vault.owner;
+        cauldron.grab(vaultId, address(this));
+    }
 
 // Fixed
-[修复代码]
+    function grab(bytes12 vaultId) public {
+        DataTypes.Vault memory vault = cauldron.vaults(vaultId);
+        if (vaultOwners[vaultId] == address(0)){
+            vaultOwners[vaultId] = vault.owner;
+        }
+        cauldron.grab(vaultId, address(this));
+    }
 ```
 
-**English Takeaway**: When users can choose their own resource identifiers, attackers can front-run and reserve them, causing denial of service.
+**English Takeaway**: The original owner record is overwritten when grab() is called a second time, preventing the vault from being returned after debt is cleared.
 
 
 ## Low Risk Findings（仅记录从未见过的）
