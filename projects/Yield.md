@@ -231,7 +231,7 @@ function _redeem(IFYToken fyToken, address to, uint256 wad) private {
 
 **English Takeaway**: Batch operations must enforce atomicity or isolate intermediate states. Any gap between two dependent transactions is a window for front-running attacks.
 
-## Medium Risk Findings（仅记录新模式）
+## Medium Risk Findings
 
 ### [M-01]: `vaultID` 可被抢注导致用户创建 `vault` 失败
 
