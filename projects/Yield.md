@@ -233,7 +233,7 @@ function _redeem(IFYToken fyToken, address to, uint256 wad) private {
 
 ## Medium Risk Findings（仅记录新模式）
 
-### [M-01]: vaultID 可被抢注导致用户创建 vault 失败
+### [M-01]: `vaultID` 可被抢注导致用户创建 `vault` 失败
 
 **Severity**: Medium
 
@@ -256,7 +256,7 @@ function _redeem(IFYToken fyToken, address to, uint256 wad) private {
 
 **English Takeaway**: When users can choose their own resource identifiers, attackers can front-run and reserve them, causing denial of service.
 
-### [M-02]: `witch.grab()` 二次调用会导致金库原有的所有权丢失
+### [M-02]: `Witch.grab()` 二次调用会导致金库原有的所有权丢失
 
 **Severity**: Medium
 
@@ -273,7 +273,8 @@ function _redeem(IFYToken fyToken, address to, uint256 wad) private {
 2. Alice的金库被二次扣押，再次调用`Witch.grab()`后，`vaultOwners[vaultId]`变成`Witch`合约本身。
 3. Alice的金库债务完全结清，Alice无法取回金库中剩余的抵押物。
 
-**Fix**: 在`Witch.grab()`添加额外的检查，当`vaultOwners[vaultId]`已存在数据时，不再重复调用`vaultOwners[vaultId] = vault.owner`。
+**Fix**: 
+- 在`Witch.grab()`添加额外的检查，当`vaultOwners[vaultId]`已存在数据时，不再重复调用`vaultOwners[vaultId] = vault.owner`。
 
 **Code (Vulnerable & Fixed)**:
 ```solidity
@@ -287,7 +288,7 @@ function _redeem(IFYToken fyToken, address to, uint256 wad) private {
 // Fixed
     function grab(bytes12 vaultId) public {
         DataTypes.Vault memory vault = cauldron.vaults(vaultId);
-        if (vaultOwners[vaultId] == address(0)){
+        if (vaultOwners[vaultId] != address(this)){
             vaultOwners[vaultId] = vault.owner;
         }
         cauldron.grab(vaultId, address(this));
