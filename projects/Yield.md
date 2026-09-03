@@ -297,6 +297,34 @@ function _redeem(IFYToken fyToken, address to, uint256 wad) private {
 
 **English Takeaway**: The original owner record is overwritten when grab() is called a second time, preventing the vault from being returned after debt is cleared.
 
+### [M-03]: `chi` 可通过 Compound 闪电贷被短暂推高，导致用户多赎资产
+
+**Severity**: Medium
+
+**Location**: `CompoundMultiOracle.sol` – `get()` 函数
+
+**Description**: `chi` 的值依赖 Compound 的 `exchangeRateStored`，该值会随着 `totalBorrows` 的波动而变化。攻击者可在单笔交易中，先在 Compound 借入大量资产推高 `totalBorrows`，再调用 `FYToken.redeem()` 使用被推高的 `chi` 计算赎回金额，最后归还借款。这导致用户以相同数量的 `fyToken` 赎回了更多底层资产。
+
+**Impact**: 攻击者可在每笔交易中套取协议资产，收益取决于其操纵 Compound 利率的能力。
+
+**Root Cause**: `chi` 依赖的外部价格源（Compound 的 `exchangeRateStored`）可在单笔交易内被操纵，且操纵后立即恢复，难以被事后检测。
+
+**My POC Walkthrough (optional)**：
+
+**Fix**: 
+1. 使用 TWAP（时间加权平均价格）代替瞬时价格源。
+2. 限制 `chi` 的变化幅度，防止单笔交易内的剧烈波动。
+
+**Code (Vulnerable & Fixed)**:
+```solidity
+// Vulnerable
+
+// Fixed
+
+```
+
+**English Takeaway**: Never use an oracle that can be manipulated within a single transaction to calculate critical redemption amounts.
+
 
 ## Low Risk Findings（仅记录从未见过的）
 
