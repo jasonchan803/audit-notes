@@ -325,7 +325,6 @@ function _redeem(IFYToken fyToken, address to, uint256 wad) private {
 
 **English Takeaway**: Never use an oracle that can be manipulated within a single transaction to calculate critical redemption amounts.
 
-
 ## Low Risk Findings（仅记录从未见过的）
 
 ### [L-01]: 
