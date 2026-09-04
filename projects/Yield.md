@@ -356,7 +356,7 @@ function _redeem(IFYToken fyToken, address to, uint256 wad) private {
 
 ## Discussion & Takeaways
 
-### M-06: `batch` operation constraints – a design trade-off
+### M-06: `batch` 的操作限制（绑定好的操作步骤与顺序）是项目设计的权衡
 
 **Summary**: `Ladle.batch` has implicit constraints on operation order/composition. If a user manually constructs a batch that violates these constraints, transactions may fail or tokens may be locked.
 
