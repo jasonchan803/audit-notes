@@ -354,6 +354,16 @@ function _redeem(IFYToken fyToken, address to, uint256 wad) private {
 
 **English Takeaway**: [1句英文总结]
 
+## Discussion & Takeaways
+
+### M-06: `batch` operation constraints – a design trade-off
+
+**Summary**: `Ladle.batch` has implicit constraints on operation order/composition. If a user manually constructs a batch that violates these constraints, transactions may fail or tokens may be locked.
+
+**Project's position**: This is a conscious trade-off for flexibility and gas efficiency. Users are not expected to build batches manually, and official frontends use validated recipes. The project lead disclosed this publicly during the contest.
+
+**My takeaway**: This is not a security vulnerability — no external attacker can exploit it to harm other users. It's a design risk that project accepted. This case helps me distinguish between "protocol bugs" and "user error boundaries."
+
 ## Summary & Takeaways
 - [总结和收获]
 - 任何允许管理员单方面转移用户资产的函数都应视为高危，除非有强力缓冲机制。
