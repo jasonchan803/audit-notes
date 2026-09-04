@@ -364,6 +364,14 @@ function _redeem(IFYToken fyToken, address to, uint256 wad) private {
 
 **My takeaway**: This is not a security vulnerability — no external attacker can exploit it to harm other users. It's a design risk that project accepted. This case helps me distinguish between "protocol bugs" and "user error boundaries."
 
+### M-07: `JoinFactory.createJoin` 可被抢注导致部署失败
+
+**Summary**: `createJoin` 使用 CREATE2，任何人可提前部署相同地址的 Join，导致官方部署失败。
+
+**Project's response**: 攻击只会造成部署延迟，不影响用户资金和正常协议运行。可通过重新部署工厂或改用 CREATE 解决。恶意创建的 Join 无法通过 `Wand.addAsset` 添加到协议。
+
+**My takeaway**: 这是一个“部署流程风险”，不涉及核心协议安全。项目方已确认修复方案。不值得作为独立漏洞记录。
+
 ## Summary & Takeaways
 - [总结和收获]
 - 任何允许管理员单方面转移用户资产的函数都应视为高危，除非有强力缓冲机制。
