@@ -445,6 +445,17 @@ function setFee(uint256 fee) public auth(this.setFee.selector) { ... }
 
 **My takeaway**: 这是一个“部署流程风险”，不涉及核心协议安全。项目方已确认修复方案。不值得作为独立漏洞记录。
 
+### M-07: L-03 (Discussion): `receive()` 缺少地址检查，可能导致 ETH 错配
+
+**Summary**: `Ladle.receive()` 允许任何地址向合约发送 ETH。虽然 `_exitEther` 会在下次 `EXIT_ETHER` 操作时转出所有 WETH 余额，但误转入的 ETH 会被一并转给下一个执行提取操作的用户，导致资金错配。
+
+**Project's response**: （项目方未明确回应此问题，但从代码设计来看，`_exitEther` 会提取所有 WETH 余额，说明项目方可能认为资金不会永久锁定，错配问题由用户自行负责。）
+
+**My takeaway**: 
+- 这不是安全漏洞：资金没有被锁定或被盗，只是流向发生变化。
+- 这是用户教育问题：误转入的 ETH 无法追回，如果项目方希望避免此类情况，可以限制 receive() 仅接受来自 weth 合约的调用。
+- 审计时需注意：区分“资金锁定”和“资金错配”的差异，前者属于安全漏洞，后者属于用户体验问题。
+
 ## Summary & Takeaways
 - [总结和收获]
 - 任何允许管理员单方面转移用户资产的函数都应视为高危，除非有强力缓冲机制。
