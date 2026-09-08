@@ -398,34 +398,55 @@ function setFee(uint256 fee) public auth(this.setFee.selector) { ... }
 
 **English Takeaway**: msg.sig is not updated during internal calls. Never rely on it for access control unless you enforce external-only entry points or pass the expected selector explicitly.
 
-## Low Risk Findings（仅记录从未见过的）
+## Low Risk Findings
 
-### [L-01]: 
+### [L-01]: `redeem` 函数应该返回真实赎回的数量
 
-**Severity**: [Critical/High/Medium/Low/Informational]
+**Severity**: Low
 
-**Location**: [合约文件:行号 或 函数名]
+**Location**: `FYToken.sol` 的 `redeem()` 函数
 
-**Description**: [用自己的话描述]
+**Description**: 函数最后 `return amount` 返回的是用户传入的赎回数量，但实际赎回的是 `redeemed = amount * accrual`（本金 + 利息），导致返回值与链上实际转移的资产数量不一致。
 
-**Impact**: [后果]
+**Impact**: 返回值与链上实际转移金额不一致，可能误导依赖该返回值的链下集成（如子图、前端），让用户误以为参与该协议没有产生任何收益。
 
-**Root Cause**: [一句话原因]
+**Root Cause**:误用 `amount` 作为返回值，而非实际计算出的 `redeemed`。
 
 **My POC Walkthrough (optional)**：[我的POC思路]
 
-**Fix**: [修复方式]
+**Fix**: 删除 `return amount`。由于 `redeemed` 是命名返回值，函数将自动返回 `redeemed` 的当前值。
 
 **Code (Vulnerable & Fixed)**:
 ```solidity
 // Vulnerable
-[漏洞代码]
+    function redeem(address to, uint256 amount)
+        external override
+        afterMaturity
+        returns (uint256 redeemed)
+    {
+        _burn(msg.sender, amount);
+        redeemed = amount.wmul(_accrual());
+        join.exit(to, redeemed.u128());
+        
+        emit Redeemed(msg.sender, to, amount, redeemed);
+        return amount;
+    }
 
 // Fixed
-[修复代码]
+    function redeem(address to, uint256 amount)
+        external override
+        afterMaturity
+        returns (uint256 redeemed)
+    {
+        _burn(msg.sender, amount);
+        redeemed = amount.wmul(_accrual());
+        join.exit(to, redeemed.u128());
+        
+        emit Redeemed(msg.sender, to, amount, redeemed);
+    }
 ```
 
-**English Takeaway**: [1句英文总结]
+**English Takeaway**: Always return the actual value transferred, not the input parameter.
 
 ## Discussion & Takeaways
 
