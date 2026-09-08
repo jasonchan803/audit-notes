@@ -346,6 +346,58 @@ Witch 在清算时假设 1 fyToken = 1 底层资产（1:1 汇率）。但到期�
 **My takeaway**:  
 This reminds me : Although the attack described can't happen, it reveals a real issue.
 
+### [M-05]: `auth` 修饰符在内部调用中可能被绕过
+
+**Severity**: Medium（当前代码中无直接利用路径，但设计缺陷存在）
+
+**Location**: `AccessControl.sol` – `auth()` 修饰符；多处 `public auth` 函数（如 `Ladle.setFee`）
+
+**Description**: `auth` 修饰符使用 `msg.sig` 检查调用者是否拥有当前函数的权限。但在 Solidity 中，`msg.sig` 只在**外部调用**时更新，在**内部调用**（如 `public` 函数被同一合约的其他函数调用）时保持不变。这意味着：
+
+- 外部调用者调用函数 A（有 `auth`），A 内部调用函数 B（也有 `auth`）。
+- B 的 `auth` 检查的 `msg.sig` 仍然是 `A.selector`，而不是 `B.selector`。
+- 如果调用者拥有 A 的权限，即使没有 B 的权限，也能通过 B 的检查。
+
+**Impact**:攻击者可能利用此机制，通过拥有一个低权限函数的授权，间接调用一个高权限函数，实现权限提升。当前代码库中没有发现可直接利用的路径，但该设计缺陷可能在未来的代码迭代中被意外引入（如通过 `_moduleCall` 添加的新模块）。
+
+**Root Cause**: `auth` 修饰符设计时未考虑到 `msg.sig` 在内部调用中不更新的特性，将 `msg.sig` 直接用作权限标识符。
+
+**My POC Walkthrough (optional)**：
+1.攻击者拥有 setFee.selector 的权限，但没有 updateState.selector 的权限。
+2.setFee 函数内部调用了 updateState（都是 public auth）。
+3.攻击者调用 setFee，通过权限检查。
+4.setFee 内部调用 updateState，updateState 的 auth 检查 msg.sig，发现是 setFee.selector，攻击者有该权限 → 检查通过。
+5.攻击者成功执行了 updateState，尽管他没有该函数的直接权限。
+
+**Fix**:
+1. 将所有 `public auth` 函数改为 `external`，强制只能从外部调用（项目方已采纳）。
+2. 修改 `auth` 修饰符，显式传递当前函数的选择器作为参数（推荐，更安全）：
+
+**Code (Vulnerable & Fixed)**:
+```solidity
+// Vulnerable
+modifier auth() {
+    require(_hasRole(msg.sig, msg.sender), "Access denied");
+    _;
+}
+function setFee(uint256 fee) public auth { ... }
+function updateState() public auth { ... }
+
+// Fixed (方案一：改用 external)
+function setFee(uint256 fee) external auth { ... }
+function updateState() external auth { ... }
+
+// Fixed (方案二：显式传递 selector)
+modifier auth(bytes4 fs) {
+    require(msg.sig == fs, "Wrong selector");
+    require(_hasRole(fs, msg.sender), "Access denied");
+    _;
+}
+function setFee(uint256 fee) public auth(this.setFee.selector) { ... }
+```
+
+**English Takeaway**: msg.sig is not updated during internal calls. Never rely on it for access control unless you enforce external-only entry points or pass the expected selector explicitly.
+
 ## Low Risk Findings（仅记录从未见过的）
 
 ### [L-01]: 
