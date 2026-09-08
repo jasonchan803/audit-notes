@@ -325,6 +325,27 @@ function _redeem(IFYToken fyToken, address to, uint256 wad) private {
 
 **English Takeaway**: Never use an oracle that can be manipulated within a single transaction to calculate critical redemption amounts.
 
+### [M-04] Witch 在到期后清算时错误计算债务价值
+
+**Severity**: Medium
+
+**Location**: `Witch.sol` – `buy()` 函数的清算价格计算
+
+**Description**:  
+Witch 在清算时假设 1 fyToken = 1 底层资产（1:1 汇率）。但到期后，fyToken 的实际价值应随利率累积而增加（`accrual > 1`）。这导致 Witch 在清算时低估了债务价值，协议可能在清算中蒙受损失。
+
+**Impact**:  
+虽然具体的“给金库给 Witch”攻击路径在代码层面不可行（Witch 无法直接接收未经过 grab 的金库），但该漏洞暴露了一个真实的底层问题：**Witch 在到期后的清算使用了错误的债务计算方式**。在真实的清算场景中，协议可能因此遭受资金损失。
+
+**Root Cause**:  
+`_debtInBase` 函数是 `Ladle` 的私有函数，Witch 无法直接调用，导致其无法获取到期后的正确债务金额。
+
+**Fix**:  
+将 `_debtInBase` 改为 `Cauldron` 的公共函数，使 Witch 能够正确计算到期后的债务金额。
+
+**My takeaway**:  
+This remind me : Although the attack described can't happen, it reveals a real issue.
+
 ## Low Risk Findings（仅记录从未见过的）
 
 ### [L-01]: 
