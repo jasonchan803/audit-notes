@@ -24,9 +24,12 @@ My personal notes for smart contract audit learning.
 - 2026-06-18: finished Don’t sacrifice core logic for low-probability events knowledage-note.
 - 2026-06-18: finished low risk findings in PoolTogether Micro Contest #1 project-notes.
 - 2026-08-17：finished high risk findings in Yield project-notes.
+- 2026-09-08: finished medium risk findings in Yield project-notes.
+- 2026-09-08: finished zero-address-validation knowledage-note.
+- 2026-09-08: finished low risk findings in Yield project-notes.
 
 
-## Total numbers of notes：10
+## Total numbers of notes：11
 ## Current stage：Second stage(Simple logic vulnerabilities)
 
 
