@@ -344,7 +344,7 @@ Witch 在清算时假设 1 fyToken = 1 底层资产（1:1 汇率）。但到期�
 将 `_debtInBase` 改为 `Cauldron` 的公共函数，使 Witch 能够正确计算到期后的债务金额。
 
 **My takeaway**:  
-This remind me : Although the attack described can't happen, it reveals a real issue.
+This reminds me : Although the attack described can't happen, it reveals a real issue.
 
 ## Low Risk Findings（仅记录从未见过的）
 
