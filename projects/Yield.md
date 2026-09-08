@@ -363,11 +363,11 @@ This reminds me : Although the attack described can't happen, it reveals a real 
 **Root Cause**: `auth` 修饰符设计时未考虑到 `msg.sig` 在内部调用中不更新的特性，将 `msg.sig` 直接用作权限标识符。
 
 **My POC Walkthrough (optional)**：
-1.攻击者拥有 setFee.selector 的权限，但没有 updateState.selector 的权限。
-2.setFee 函数内部调用了 updateState（都是 public auth）。
-3.攻击者调用 setFee，通过权限检查。
-4.setFee 内部调用 updateState，updateState 的 auth 检查 msg.sig，发现是 setFee.selector，攻击者有该权限 → 检查通过。
-5.攻击者成功执行了 updateState，尽管他没有该函数的直接权限。
+1. 攻击者拥有 setFee.selector 的权限，但没有 updateState.selector 的权限。
+2. setFee 函数内部调用了 updateState（都是 public auth）。
+3. 攻击者调用 setFee，通过权限检查。
+4. setFee 内部调用 updateState，updateState 的 auth 检查 msg.sig，发现是 setFee.selector，攻击者有该权限 → 检查通过。
+5. 攻击者成功执行了 updateState，尽管他没有该函数的直接权限。
 
 **Fix**:
 1. 将所有 `public auth` 函数改为 `external`，强制只能从外部调用（项目方已采纳）。
