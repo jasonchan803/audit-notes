@@ -468,5 +468,4 @@ emit FundsTransferred(_yieldSource, currentBalance);
 - 审计不能假设管理员诚实，应设计最小权限原则。
 
 ## Further Thoughts
-- [延伸思考]
 - 如果使用 OpenZeppelin 的最新库，哪些问题会自动避免？
