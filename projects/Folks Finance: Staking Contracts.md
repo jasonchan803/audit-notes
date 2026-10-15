@@ -1,6 +1,6 @@
 ---
 type: project-note
-project: Folks Finance: Staking Contracts
+project: Folks Finance ：Staking Contracts
 audit-source: immunefi
 date: 2026-10-15
 tags: [tag1, tag2]
