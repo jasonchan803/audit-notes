@@ -1,10 +1,10 @@
 ---
 type: project-note
-project: Folks Finance ：Staking Contracts
+project: "Folks Finance: Staking Contracts"
 audit-source: immunefi
 date: 2026-10-15
-tags: [tag1, tag2]
-status: [in-progress/completed]
+tags: [staking, permit, rounding, low]
+status: completed
 ---
 
 ## Project Brief
@@ -18,11 +18,11 @@ A fixed-APR staking protocol where users stake ERC-20 tokens for a fixed duratio
 
 **Location**: `Staking.sol` - `stakeWithPermit()`
 
-**Description**: Using try ... catch {} would cause the failure of permit being silently ignored
+**Description**: Using try ... catch {} would causes permit failures to be silently ignored
 
 **Impact**: 
 - When allowance is insufficient, the transaction reverts with a misleading error (e.g., "insufficient allowance") instead of indicating that the permit has failed.
-- the transaction is successful but the permit actually fail when the allowance is enough.
+- the transaction is successful but the permit actually fails when the allowance is enough.
 
 **Root Cause**: 
 try ... catch {} do not distinguish error types and emit the event.
@@ -251,15 +251,15 @@ catch (bytes memory reason) {
 
 ### [L-02]: The small pledge reward is rounded to 0 due to integer division
 
-**Severity**: Low/Informational 
+**Severity**: Low
 
 **Location**: `Staking.sol` - `_getAccrued()`
 
 **Description**: Due to integer division rounding down, users staking very small amounts receive zero reward despite locking their tokens for the full duration.
 
-**Impact**: User can not get any reward throuth they locking their tokens for the full duration.
+**Impact**: Users cannot receive any reward despite locking their tokens
 
-**Root Cause**: The calculate is (stakingAmount * stakingTime * stakingApyBps) / (365 days * 10000)
+**Root Cause**: The calculation is (stakingAmount * stakingTime * stakingApyBps) / (365 days * 10000)
 
 **My POC Walkthrough (optional)**：
 ```solidity
@@ -453,7 +453,7 @@ contract Mytest is Test {
 }
 ```
 
-**Fix**: Revert when the reward equal to 0.
+**Fix**: Revert when the reward equal to 0. Alternatively, enforce a minimum stake amount in _stake to prevent dust-level stakes.
 
 **Code (Vulnerable & Fixed)**:
 ```solidity
