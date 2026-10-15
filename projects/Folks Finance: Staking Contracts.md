@@ -29,7 +29,54 @@ try ... catch {} do not distinguish error types and emit the event.
 
 **My POC Walkthrough (optional)**：
 ```solidity
-    function test_1() public {
+// SPDX-License-Identifier: BUSL-1.1
+
+pragma solidity ^0.8.30;
+
+import {ERC20Permit, ERC20} from "openzeppelin-contracts/contracts/token/ERC20/extensions/ERC20Permit.sol";
+import {IERC165} from "openzeppelin-contracts/contracts/utils/introspection/IERC165.sol";
+import {IAccessControl} from "openzeppelin-contracts/contracts/access/IAccessControl.sol";
+import {Pausable} from "openzeppelin-contracts/contracts/utils/Pausable.sol";
+import {IERC20Errors} from "openzeppelin-contracts/contracts/interfaces/draft-IERC6093.sol";
+import {Test} from "forge-std/Test.sol";
+import {Staking} from "../src/Staking.sol";
+import {IStakingV1} from "../src/interfaces/IStakingV1.sol";
+import {IMigratorV1} from "../src/interfaces/IMigratorV1.sol";
+import {IMigratorReceiverV2} from "../src/interfaces/IMigratorReceiverV2.sol";
+
+contract Token is ERC20Permit {
+    constructor() ERC20Permit("TestToken") ERC20("TestToken", "TTKN") {}
+}
+
+contract UnsupportedToken is ERC20Permit {
+    constructor() ERC20Permit("UnsupportedToken") ERC20("UnsupportedToken", "UTKN") {}
+}
+
+contract Mytest is Test {
+    Staking public staking;
+
+    address public admin = address(2);
+    address public manager = address(3);
+    address public migrator = address(4);
+    address public pauser = address(5);
+    address public alice = address(6);
+    address public bob = address(7);
+    uint256 public charliePrivateKey = 0xca51;
+    address public charlie = vm.addr(charliePrivateKey);
+
+    Token public token;
+    UnsupportedToken public unsupportedToken;
+
+    function setUp() public {
+        token = new Token();
+        unsupportedToken = new UnsupportedToken();
+        staking = new Staking(admin, manager, pauser, address(token));
+
+        vm.prank(admin);
+        staking.grantRole(keccak256("MIGRATOR"), migrator);
+    }
+
+    function test_Staking_RevertWhen_DifferentPersonSignature() public {
         deal(address(token), address(staking), 1000 ether);
         deal(address(token), charlie, 100 ether);
 
@@ -44,7 +91,7 @@ try ... catch {} do not distinguish error types and emit the event.
         stakeWithPermit(alice, periodIndex, 10 ether, 20, 10, 5000, address(0), deadline, v, r, s);
     }
 
-    function test_2() public {
+    function test_Staking_When_PermitExpired() public {
         deal(address(token), address(staking), 1000 ether);
         deal(address(token), charlie, 100 ether);
 
@@ -64,6 +111,128 @@ try ... catch {} do not distinguish error types and emit the event.
         assertEq(staking.getUserStakes(charlie).length, 1);
         assertEq(staking.getUserStake(charlie, periodIndex).amount, 10 ether);
     }
+
+    // Helpers
+
+    function addStakingPeriodByManager(
+        uint256 cap,
+        uint64 stakingDurationSeconds,
+        uint64 unlockDurationSeconds,
+        uint32 aprBps,
+        bool isActive
+    ) internal returns (uint8 periodIndex) {
+        vm.prank(manager);
+        periodIndex = staking.addStakingPeriod(cap, stakingDurationSeconds, unlockDurationSeconds, aprBps, isActive);
+    }
+
+    function approveAndStake(
+        address user,
+        uint8 periodIndex,
+        uint256 amount,
+        uint64 maxStakingDurationSeconds,
+        uint64 maxUnlockDurationSeconds,
+        uint32 minAprBps,
+        address referrer
+    ) internal returns (uint8 stakeIndex) {
+        vm.startPrank(user);
+        token.approve(address(staking), amount);
+        stakeIndex = staking.stake(
+            periodIndex,
+            amount,
+            IStakingV1.StakeParams({
+                maxStakingDurationSeconds: maxStakingDurationSeconds,
+                maxUnlockDurationSeconds: maxUnlockDurationSeconds,
+                minAprBps: minAprBps,
+                referrer: referrer
+            })
+        );
+        vm.stopPrank();
+    }
+
+    function stake(
+        address user,
+        uint8 periodIndex,
+        uint256 amount,
+        uint64 maxStakingDurationSeconds,
+        uint64 maxUnlockDurationSeconds,
+        uint32 minAprBps,
+        address referrer
+    ) internal returns (uint8 stakeIndex) {
+        vm.prank(user);
+        stakeIndex = staking.stake(
+            periodIndex,
+            amount,
+            IStakingV1.StakeParams({
+                maxStakingDurationSeconds: maxStakingDurationSeconds,
+                maxUnlockDurationSeconds: maxUnlockDurationSeconds,
+                minAprBps: minAprBps,
+                referrer: referrer
+            })
+        );
+    }
+
+    function stakeWithPermit(
+        address user,
+        uint8 periodIndex,
+        uint256 amount,
+        uint64 maxStakingDurationSeconds,
+        uint64 maxUnlockDurationSeconds,
+        uint32 minAprBps,
+        address referrer,
+        uint256 deadline,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    ) internal returns (uint8 stakeIndex) {
+        vm.prank(user);
+        stakeIndex = staking.stakeWithPermit(
+            periodIndex,
+            amount,
+            IStakingV1.StakeParams({
+                maxStakingDurationSeconds: maxStakingDurationSeconds,
+                maxUnlockDurationSeconds: maxUnlockDurationSeconds,
+                minAprBps: minAprBps,
+                referrer: referrer
+            }),
+            deadline,
+            v,
+            r,
+            s
+        );
+    }
+
+    function signCharliePermit(uint256 amount, uint256 deadline) internal view returns (uint8 v, bytes32 r, bytes32 s) {
+        return vm.sign(
+            charliePrivateKey,
+            keccak256(
+                abi.encodePacked(
+                    "\x19\x01",
+                    token.DOMAIN_SEPARATOR(),
+                    keccak256(
+                        abi.encode(
+                            keccak256(
+                                "Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)"
+                            ),
+                            charlie,
+                            address(staking),
+                            amount,
+                            token.nonces(charlie),
+                            deadline
+                        )
+                    )
+                )
+            )
+        );
+    }
+
+    function calculateReward(uint256 stakingAmount, uint256 stakingTime, uint256 stakingApyBps)
+        internal
+        pure
+        returns (uint256)
+    {
+        return (stakingAmount * stakingTime * stakingApyBps) / (365 days * 10000);
+    }
+}
 ```
 
 **Fix**: Distinguish the error type in the catch block, or emit at least one event to indicate that permit has failed
@@ -94,6 +263,53 @@ catch (bytes memory reason) {
 
 **My POC Walkthrough (optional)**：
 ```solidity
+// SPDX-License-Identifier: BUSL-1.1
+
+pragma solidity ^0.8.30;
+
+import {ERC20Permit, ERC20} from "openzeppelin-contracts/contracts/token/ERC20/extensions/ERC20Permit.sol";
+import {IERC165} from "openzeppelin-contracts/contracts/utils/introspection/IERC165.sol";
+import {IAccessControl} from "openzeppelin-contracts/contracts/access/IAccessControl.sol";
+import {Pausable} from "openzeppelin-contracts/contracts/utils/Pausable.sol";
+import {IERC20Errors} from "openzeppelin-contracts/contracts/interfaces/draft-IERC6093.sol";
+import {Test} from "forge-std/Test.sol";
+import {Staking} from "../src/Staking.sol";
+import {IStakingV1} from "../src/interfaces/IStakingV1.sol";
+import {IMigratorV1} from "../src/interfaces/IMigratorV1.sol";
+import {IMigratorReceiverV2} from "../src/interfaces/IMigratorReceiverV2.sol";
+
+contract Token is ERC20Permit {
+    constructor() ERC20Permit("TestToken") ERC20("TestToken", "TTKN") {}
+}
+
+contract UnsupportedToken is ERC20Permit {
+    constructor() ERC20Permit("UnsupportedToken") ERC20("UnsupportedToken", "UTKN") {}
+}
+
+contract Mytest is Test {
+    Staking public staking;
+
+    address public admin = address(2);
+    address public manager = address(3);
+    address public migrator = address(4);
+    address public pauser = address(5);
+    address public alice = address(6);
+    address public bob = address(7);
+    uint256 public charliePrivateKey = 0xca51;
+    address public charlie = vm.addr(charliePrivateKey);
+
+    Token public token;
+    UnsupportedToken public unsupportedToken;
+
+    function setUp() public {
+        token = new Token();
+        unsupportedToken = new UnsupportedToken();
+        staking = new Staking(admin, manager, pauser, address(token));
+
+        vm.prank(admin);
+        staking.grantRole(keccak256("MIGRATOR"), migrator);
+    }
+
     function test_Staking_less_Withdrawnone() public {
         deal(address(token), address(staking), 1000 ether);
         deal(address(token), alice, 100 ether);
@@ -113,6 +329,128 @@ catch (bytes memory reason) {
         assertEq(aliceReward, 0);
         assertEq(staking.getClaimable(alice, periodIndex), initialamount);
     }
+
+    // Helpers
+
+    function addStakingPeriodByManager(
+        uint256 cap,
+        uint64 stakingDurationSeconds,
+        uint64 unlockDurationSeconds,
+        uint32 aprBps,
+        bool isActive
+    ) internal returns (uint8 periodIndex) {
+        vm.prank(manager);
+        periodIndex = staking.addStakingPeriod(cap, stakingDurationSeconds, unlockDurationSeconds, aprBps, isActive);
+    }
+
+    function approveAndStake(
+        address user,
+        uint8 periodIndex,
+        uint256 amount,
+        uint64 maxStakingDurationSeconds,
+        uint64 maxUnlockDurationSeconds,
+        uint32 minAprBps,
+        address referrer
+    ) internal returns (uint8 stakeIndex) {
+        vm.startPrank(user);
+        token.approve(address(staking), amount);
+        stakeIndex = staking.stake(
+            periodIndex,
+            amount,
+            IStakingV1.StakeParams({
+                maxStakingDurationSeconds: maxStakingDurationSeconds,
+                maxUnlockDurationSeconds: maxUnlockDurationSeconds,
+                minAprBps: minAprBps,
+                referrer: referrer
+            })
+        );
+        vm.stopPrank();
+    }
+
+    function stake(
+        address user,
+        uint8 periodIndex,
+        uint256 amount,
+        uint64 maxStakingDurationSeconds,
+        uint64 maxUnlockDurationSeconds,
+        uint32 minAprBps,
+        address referrer
+    ) internal returns (uint8 stakeIndex) {
+        vm.prank(user);
+        stakeIndex = staking.stake(
+            periodIndex,
+            amount,
+            IStakingV1.StakeParams({
+                maxStakingDurationSeconds: maxStakingDurationSeconds,
+                maxUnlockDurationSeconds: maxUnlockDurationSeconds,
+                minAprBps: minAprBps,
+                referrer: referrer
+            })
+        );
+    }
+
+    function stakeWithPermit(
+        address user,
+        uint8 periodIndex,
+        uint256 amount,
+        uint64 maxStakingDurationSeconds,
+        uint64 maxUnlockDurationSeconds,
+        uint32 minAprBps,
+        address referrer,
+        uint256 deadline,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    ) internal returns (uint8 stakeIndex) {
+        vm.prank(user);
+        stakeIndex = staking.stakeWithPermit(
+            periodIndex,
+            amount,
+            IStakingV1.StakeParams({
+                maxStakingDurationSeconds: maxStakingDurationSeconds,
+                maxUnlockDurationSeconds: maxUnlockDurationSeconds,
+                minAprBps: minAprBps,
+                referrer: referrer
+            }),
+            deadline,
+            v,
+            r,
+            s
+        );
+    }
+
+    function signCharliePermit(uint256 amount, uint256 deadline) internal view returns (uint8 v, bytes32 r, bytes32 s) {
+        return vm.sign(
+            charliePrivateKey,
+            keccak256(
+                abi.encodePacked(
+                    "\x19\x01",
+                    token.DOMAIN_SEPARATOR(),
+                    keccak256(
+                        abi.encode(
+                            keccak256(
+                                "Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)"
+                            ),
+                            charlie,
+                            address(staking),
+                            amount,
+                            token.nonces(charlie),
+                            deadline
+                        )
+                    )
+                )
+            )
+        );
+    }
+
+    function calculateReward(uint256 stakingAmount, uint256 stakingTime, uint256 stakingApyBps)
+        internal
+        pure
+        returns (uint256)
+    {
+        return (stakingAmount * stakingTime * stakingApyBps) / (365 days * 10000);
+    }
+}
 ```
 
 **Fix**: Revert when the reward equal to 0.
