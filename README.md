@@ -27,9 +27,10 @@ My personal notes for smart contract audit learning.
 - 2026-09-08: finished medium risk findings in Yield project-notes.
 - 2026-09-08: finished zero-address-validation knowledage-note.
 - 2026-09-08: finished low risk findings in Yield project-notes.
+- 2026-10-15：finished Folks Finance: Staking Contracts project-notes.
 
 
-## Total numbers of notes：11
+## Total numbers of notes：12
 ## Current stage：Second stage(Simple logic vulnerabilities)
 
 
