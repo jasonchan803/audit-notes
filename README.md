@@ -104,20 +104,24 @@ status: [in-progress/completed]
 **Location**: [合约文件:行号 或 函数名]
 
 **Description**: [用自己的话描述]
+```solidity
+// Vulnerable
+[漏洞代码]
+```
 
 **Impact**: [后果]
 
 **Root Cause**: [一句话原因]
 
-**My POC Walkthrough (optional)**：[我的POC思路]
+**My POC Walkthrough**：[我的POC思路]
+```solidity
+// POC
+[测试代码]
+每一步写上注释
+```
 
 **Fix**: [修复方式]
-
-**Code (Vulnerable & Fixed)**:
 ```solidity
-// Vulnerable
-[漏洞代码]
-
 // Fixed
 [修复代码]
 ```
@@ -125,7 +129,7 @@ status: [in-progress/completed]
 **English Takeaway**: [1句英文总结]
 
 
-## Medium Risk Findings（仅记录新模式）
+## Medium Risk Findings
 
 ### [M-01]: 
 
@@ -134,20 +138,24 @@ status: [in-progress/completed]
 **Location**: [合约文件:行号 或 函数名]
 
 **Description**: [用自己的话描述]
+```solidity
+// Vulnerable
+[漏洞代码]
+```
 
 **Impact**: [后果]
 
 **Root Cause**: [一句话原因]
 
-**My POC Walkthrough (optional)**：[我的POC思路]
+**My POC Walkthrough**：[我的POC思路]
+```solidity
+// POC
+[测试代码]
+每一步写上注释
+```
 
 **Fix**: [修复方式]
-
-**Code (Vulnerable & Fixed)**:
 ```solidity
-// Vulnerable
-[漏洞代码]
-
 // Fixed
 [修复代码]
 ```
@@ -155,7 +163,7 @@ status: [in-progress/completed]
 **English Takeaway**: [1句英文总结]
 
 
-## Low Risk Findings（仅记录从未见过的）
+## Low Risk Findings
 
 ### [L-01]: 
 
@@ -164,20 +172,24 @@ status: [in-progress/completed]
 **Location**: [合约文件:行号 或 函数名]
 
 **Description**: [用自己的话描述]
+```solidity
+// Vulnerable
+[漏洞代码]
+```
 
 **Impact**: [后果]
 
 **Root Cause**: [一句话原因]
 
-**My POC Walkthrough (optional)**：[我的POC思路]
+**My POC Walkthrough**：[我的POC思路]
+```solidity
+// POC
+[测试代码]
+每一步写上注释
+```
 
 **Fix**: [修复方式]
-
-**Code (Vulnerable & Fixed)**:
 ```solidity
-// Vulnerable
-[漏洞代码]
-
 // Fixed
 [修复代码]
 ```
