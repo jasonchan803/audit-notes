@@ -465,7 +465,7 @@ uint256 reward = (amount * stakingPeriod.aprBps * stakingPeriod.stakingDurationS
 if (reward == 0) revert RewardTooSmallToBeNonZero();
 ```
 
-### [L-02]: Stale Migration Permit Allows Asset Theft After Role Restoration
+### [L-03]: Stale Migration Permit Allows Asset Theft After Role Restoration
 **Severity**: Medium / High (取决于平台对资产转移的定级)
 
 **Location**: Staking.sol - setMigrationPermit()
@@ -523,7 +523,7 @@ function test_exploit_revokePermitBlockedAfterMigratorRoleRevoked() public {
     assertEq(staking.getUserStakes(alice).length, 0);
 }
 ```
-Fix:
+**Fix**:
 Restrict the role check to only when granting permissions (as seen in the patched version), and/or remove redundant state updates to avoid gas waste:
 
 ```solidity
