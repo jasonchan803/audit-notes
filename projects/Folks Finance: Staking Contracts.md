@@ -464,3 +464,75 @@ uint256 reward = (amount * stakingPeriod.aprBps * stakingPeriod.stakingDurationS
 uint256 reward = (amount * stakingPeriod.aprBps * stakingPeriod.stakingDurationSeconds) / rewardBpsDenominator;
 if (reward == 0) revert RewardTooSmallToBeNonZero();
 ```
+
+### [L-02]: Stale Migration Permit Allows Asset Theft After Role Restoration
+**Severity**: Medium / High (取决于平台对资产转移的定级)
+
+**Location**: Staking.sol - setMigrationPermit()
+
+**Description**:
+The setMigrationPermit function includes an unconditional check for the MIGRATOR_ROLE:
+
+```solidity
+if (!hasRole(MIGRATOR_ROLE, _migrator)) revert MigratorNotFound(_migrator);
+When a migrator loses this role, users who had previously granted them permission are unable to revoke it (setMigrationPermit(..., false) will revert). This creates a permanent "stale state" where migrationPermits[migrator][user] remains true.
+```
+**Impact**:
+
+Loss of User Control (Low/Griefing): Users cannot revoke permissions for deprecated migrators, violating the documented functionality.
+
+Unauthorized Asset Migration (Medium/High): If the admin later re-grants the MIGRATOR_ROLE to this address, the migrator can immediately call migratePositionsFrom(user) and transfer the user's staked assets without their renewed consent.
+
+**Root Cause**:
+The hasRole guard is applied unconditionally, instead of being restricted only to the granting action (_isMigrationPermitted == true).
+
+**My POC Walkthrough (Extended)**:
+
+```solidity
+function test_exploit_revokePermitBlockedAfterMigratorRoleRevoked() public {
+    // 1. Setup
+    deal(address(token), address(staking), 1000 ether);
+    deal(address(token), alice, 100 ether);
+    uint8 periodIndex = addStakingPeriodByManager(50 ether, 365 days, 10, 1000, true);
+
+    // 2. Alice stakes and grants permission
+    vm.startPrank(alice);
+    token.approve(address(staking), 50 ether);
+    staking.setMigrationPermit(migrator, true);
+    vm.stopPrank();
+    stake(alice, periodIndex, 10 ether, 365 days, 10, 1000, address(0));
+
+    // 3. Admin revokes the role
+    vm.prank(admin);
+    staking.revokeRole(keccak256("MIGRATOR"), migrator);
+
+    // 4. Alice tries to revoke permission but fails
+    vm.prank(alice);
+    vm.expectRevert(abi.encodeWithSelector(IStakingV1.MigratorNotFound.selector, migrator));
+    staking.setMigrationPermit(migrator, false);  
+
+    // 5. Admin accidentally/somehow restores the role
+    vm.prank(admin);
+    staking.grantRole(keccak256("MIGRATOR"), migrator);
+
+    // 6. Migrator exploits the stale permit to steal assets
+    vm.prank(migrator);
+    staking.migratePositionsFrom(alice);
+
+    // 7. Assertion: Alice's stake is gone (transferred to migrator)
+    assertEq(staking.getUserStakes(alice).length, 0);
+}
+```
+Fix:
+Restrict the role check to only when granting permissions (as seen in the patched version), and/or remove redundant state updates to avoid gas waste:
+
+```solidity
+if (migrationPermits[_migrator][msg.sender] == _isMigrationPermitted) return;
+if (_isMigrationPermitted && !hasRole(MIGRATOR_ROLE, _migrator)) revert MigratorNotFound(_migrator);
+migrationPermits[_migrator][msg.sender] = _isMigrationPermitted;
+```
+**My Biggest Takeaway**:
+
+Version Control is Critical: Testing against the fixed main branch made me think there was no bug. I had to use git checkout to revert to the audited commit to make the POC work.
+
+Push the Impact: The official report stopped at "User cannot revoke". By extending the POC, I proved "User's funds can be stolen". This is the difference between a Low and a High severity.
