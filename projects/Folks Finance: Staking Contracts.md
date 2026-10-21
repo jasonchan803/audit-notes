@@ -92,7 +92,8 @@ function test_Staking_less_Withdrawnone() public {
     deal(address(token), alice, 100 ether);
     
     uint8 periodIndex = addStakingPeriodByManager(50 ether, 365 days, 10, 1000, true);
-    
+
+    // 2. Alice stakes and grants permission
     vm.prank(alice);
     token.approve(address(staking), 50 ether);
     
@@ -100,10 +101,10 @@ function test_Staking_less_Withdrawnone() public {
     uint256 initialamount = 1;
     stake(alice, periodIndex, initialamount, 365 days, 10, 1000, address(0));
 
-    // 2. Fast forward past the time to make unlockTime maturity.
+    // 3. Fast forward past the time to make unlockTime maturity.
     vm.warp(366 days);
 
-    // 3. Alice receive zero reward despite locking their tokens for the full duration.
+    // 4. Alice receive zero reward despite locking their tokens for the full duration.
     uint256 aliceReward = calculateReward(1, 365 days, 1000);
     assertEq(aliceReward, 0);
     assertEq(staking.getClaimable(alice, periodIndex), initialamount);
