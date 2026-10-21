@@ -3,7 +3,7 @@ type: project-note
 project: "Folks Finance: Staking Contracts"
 audit-source: immunefi
 date: 2026-10-15
-tags: [staking, permit, rounding, low]
+tags: [staking, permit, rounding, access-control, state-lock]
 status: completed
 ---
 
@@ -12,13 +12,13 @@ A fixed-APR staking protocol where users stake ERC-20 tokens for a fixed duratio
 
 ## Low Risk Findings
 
-### [L-01]: `stakeWithPermit()` will Swallow all the permit errors
+### [L-01]: `stakeWithPermit()` will swallow all the permit errors
 
 **Severity**: Low
 
 **Location**: `Staking.sol` - `stakeWithPermit()`
 
-**Description**: Using `try ... catch {}` would causes permit failures to be silently ignored
+**Description**: Using `try ... catch {}` causes permit failures to be silently ignored
 ```solidity
 // Vulnerable
     try IERC20Permit(address(TOKEN)).permit(msg.sender, address(this), amount, deadline, v, r, s) {} catch {}
@@ -100,16 +100,17 @@ function test_Staking_less_Withdrawnone() public {
     uint256 initialamount = 1;
     stake(alice, periodIndex, initialamount, 365 days, 10, 1000, address(0));
 
-     // 2. Fast forward past the time to make unlockTime maturity.
+    // 2. Fast forward past the time to make unlockTime maturity.
     vm.warp(366 days);
-    
+
+    // 3. Alice receive zero reward despite locking their tokens for the full duration.
     uint256 aliceReward = calculateReward(1, 365 days, 1000);
     assertEq(aliceReward, 0);
     assertEq(staking.getClaimable(alice, periodIndex), initialamount);
 }
 ```
 
-**Fix**: Revert when the reward equal to 0. Alternatively, enforce a minimum stake amount in _stake to prevent dust-level stakes.
+**Fix**: Revert when the reward equals 0. Alternatively, enforce a minimum stake amount in _stake to prevent dust-level stakes.
 ```solidity
 // Fixed
     uint256 reward = (amount * stakingPeriod.aprBps * stakingPeriod.stakingDurationSeconds) / rewardBpsDenominator;
@@ -118,7 +119,7 @@ function test_Staking_less_Withdrawnone() public {
 
 ### [L-03]: Stale Migration Permit Allows Asset Theft After Role Restoration
 
-**Severity**: Medium / High 
+**Severity**: Medium
 
 **Location**: Staking.sol - setMigrationPermit()
 
@@ -132,9 +133,9 @@ When a migrator loses this role, users who had previously granted them permissio
 
 
 **Impact**:
-Loss of User Control (Low/Griefing): Users cannot revoke permissions for deprecated migrators, violating the documented functionality.
+1.Unauthorized Asset Migration (Medium/High): If the admin later re-grants the MIGRATOR_ROLE to this address, the migrator can immediately call migratePositionsFrom(user) and transfer the user's staked assets without their renewed consent.
 
-Unauthorized Asset Migration (Medium/High): If the admin later re-grants the MIGRATOR_ROLE to this address, the migrator can immediately call migratePositionsFrom(user) and transfer the user's staked assets without their renewed consent.
+2.Loss of User Control (Low/Griefing): Users cannot revoke permissions for deprecated migrators, violating the documented functionality.
 
 **Root Cause**:
 The hasRole guard is applied unconditionally, instead of being restricted only to the granting action (_isMigrationPermitted == true).
