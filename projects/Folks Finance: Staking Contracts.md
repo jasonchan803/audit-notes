@@ -133,9 +133,9 @@ When a migrator loses this role, users who had previously granted them permissio
 
 
 **Impact**:
-1.Unauthorized Asset Migration (Medium/High): If the admin later re-grants the MIGRATOR_ROLE to this address, the migrator can immediately call migratePositionsFrom(user) and transfer the user's staked assets without their renewed consent.
+- Unauthorized Asset Migration (Medium/High): If the admin later re-grants the MIGRATOR_ROLE to this address, the migrator can immediately call migratePositionsFrom(user) and transfer the user's staked assets without their renewed consent.
 
-2.Loss of User Control (Low/Griefing): Users cannot revoke permissions for deprecated migrators, violating the documented functionality.
+- Loss of User Control (Low/Griefing): Users cannot revoke permissions for deprecated migrators, violating the documented functionality.
 
 **Root Cause**:
 The hasRole guard is applied unconditionally, instead of being restricted only to the granting action (_isMigrationPermitted == true).
