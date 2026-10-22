@@ -17,23 +17,28 @@ status: completed
 ```solidity
 // ❌ 错误模式：只有操作地址，缺乏金额数据
 emit MigrateFrom(msg.sender, user);
-影响：
+```
+
+**影响**：
 不会直接造成链上资金损失，但会导致严重的“链下可见性缺失”：
 
 链下对账系统无法知道到底转走了多少钱，导致数据混乱。
 
 在极端情况下，如果发生恶意迁移攻击，链下监控机器人因为读不到金额变化，可能无法及时触发警报。
 
-正确做法：
+**正确做法**：
 事件应当包含所有与业务逻辑强相关的“金额”和“状态”参数。
 
 solidity
+```
 // ✅ 正确做法：包含转移的金额和收益
 event StakeMigrated(address indexed migrator, address indexed user, uint256 amount, uint256 reward);
 emit StakeMigrated(msg.sender, user, unclaimedUserAmount, unclaimedUserRewards);
-代码对比（Vulnerable vs Fixed）：
+```
+**代码对比（Vulnerable vs Fixed）**：
 
 solidity
+```
 // ❌ 错误写法
 // Interface
 event MigrateFrom(address indexed migrator, address indexed user);
@@ -45,13 +50,14 @@ emit MigrateFrom(msg.sender, user);
 event StakeMigrated(address indexed migrator, address indexed user, uint256 amount, uint256 reward);
 // Contract
 emit StakeMigrated(msg.sender, user, unclaimedUserAmount, unclaimedUserRewards);
-延伸思考：
+```
+**延伸思考**：
 
 POC 的优雅写法：如果我们要测试事件，官方报告里的 POC 使用 vm.getRecordedLogs() 并手动 decode 略显笨重且存在语法拼写错误。最佳实践是直接使用 Foundry 的 vm.expectEmit(true, true, false, true); 配合 emit 语句来断言。
 
 商业审计的价值：虽然在赏金比赛中这类问题通常只能评为 Insight（洞察），但在真实的商业审计中，保证链下数据一致性是项目方非常看重的工程质量指标。
 
-为什么值得记录：
+**为什么值得记录**：
 
 建立“链上+链下”的全局安全观：很多时候，代码在链上是安全的，但因为事件没写对，导致链下风控失效，进而引发灾难。
 
