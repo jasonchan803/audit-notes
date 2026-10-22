@@ -29,16 +29,14 @@ emit MigrateFrom(msg.sender, user);
 **正确做法**：
 事件应当包含所有与业务逻辑强相关的“金额”和“状态”参数。
 
-solidity
-```
+```solidity
 // ✅ 正确做法：包含转移的金额和收益
 event StakeMigrated(address indexed migrator, address indexed user, uint256 amount, uint256 reward);
 emit StakeMigrated(msg.sender, user, unclaimedUserAmount, unclaimedUserRewards);
 ```
 **代码对比（Vulnerable vs Fixed）**：
 
-solidity
-```
+```solidity
 // ❌ 错误写法
 // Interface
 event MigrateFrom(address indexed migrator, address indexed user);
