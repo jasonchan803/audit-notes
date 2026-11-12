@@ -11,13 +11,16 @@ status: completed
 Plether lets users trade and hedge the strength of the US dollar onchain. Plether Perps is a perpetual market on a dollar index built from a basket of six major currencies: EUR, JPY, GBP, CAD, SEK and CHF. Traders open LONG USD positions, 
 which gain when the dollar strengthens against the basket, or SHORT USD positions, which gain when it weakens. Margin and settlement are in USDG, and orders are priced by Pyth through a delayed-order model.
 
-## High Risk Findings
+## Medium Risk Findings
 
-### [H-01]: 
+### [M-01]: 
 
-**Severity**: [Critical/High/Medium/Low/Informational]
+**Severity**: Medium
 
-**Location**: [合约文件:行号 或 函数名]
+**Location**: 
+`TrancheVault.sol` - `_requestDeposit()`
+`TrancheVault.sol` - `cancelPendingDeposit()`
+`TrancheVault.sol` - `_claimDeposit()`
 
 **Description**: 
 **Vulnerability Details**
@@ -41,7 +44,30 @@ If the address is controlled by another party, that party may obtain the ability
 
 ```solidity
 // Vulnerable
-[漏洞代码]
+ function _claimDeposit(
+        uint256 requestId,
+        uint256 assets,
+        address receiver,
+        address controller
+    ) internal returns (uint256 shares) {
+        // Only controller can claim the shares
+        _requireControllerAuth(controller);
+        if (receiver == address(0)) {
+            revert TrancheVault__ZeroAddress();
+        }
+```
+```solidity
+// Vulnerable
+function cancelPendingDeposit(
+        uint256 requestId,
+        address receiver,
+        address controller
+    ) public returns (uint256 assets) {
+        // Only controller can cancel the request
+        _requireControllerAuth(controller);
+        if (receiver == address(0)) {
+            revert TrancheVault__ZeroAddress();
+        }
 ```
 
 **Impact**: [后果]
@@ -245,10 +271,11 @@ contract InputWrongControllerAddress is BasePerpTest {
 
 ```
 
-**Fix**: [修复方式]
-```solidity
-// Fixed
-[修复代码]
-```
+**Recommendation**: 
+Introduce an owner-authorized recovery mechanism for unclaimed deposit requests, allowing the original deposit owner to cancel or reassign a request when the designated controller is incorrect or unavailable.
+
+Any reassignment mechanism must atomically update all controller-indexed request records, queue states, and pending or claimable accounting to prevent duplicate claims or inconsistent state.
+
+Alternatively, require explicit controller acceptance before permanently associating a deposit request with the designated controller. Until acceptance, the original owner should retain the ability to cancel or update the request.
 
 **English Takeaway**: [1句英文总结]
