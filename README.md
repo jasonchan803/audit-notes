@@ -250,3 +250,77 @@ status: completed
 
 **为什么值得记录**：
 [你从中学到了什么可以迁移到其他审计场景的原则或思维模式]
+
+
+
+
+
+
+提交报告模板
+
+# [Vulnerability Title]
+
+**Severity:** [Critical / High / Medium / Low]
+
+**Affected Contract:** `[Contract Name]`
+
+**Affected Location:** `path/to/Contract.sol:Lxx-Lyy`
+
+## Summary
+
+[用一段话简洁说明漏洞是什么，以及它为什么会影响用户资金或协议安全。]
+
+## Root Cause
+
+[明确指出导致漏洞的代码逻辑或设计缺陷。解释相关函数之间的关系，而不只是描述某一行代码。]
+
+## Preconditions
+
+[列出漏洞成立所需的前置条件，例如用户操作、账户权限、协议状态或外部条件。如果没有特殊前置条件，说明无需额外权限。]
+
+## Vulnerability Details
+
+[按照实际执行顺序描述完整漏洞触发过程。]
+
+1. [Step 1]
+2. [Step 2]
+3. [Step 3]
+4. [Step 4]
+
+**Affected Code:**
+
+```solidity
+// Relevant vulnerable code
+[关键漏洞代码]
+```
+
+## Impact
+
+[明确说明受影响的资产、受影响的用户，以及资金损失、冻结或协议功能异常的具体后果。]
+
+[说明影响成立的边界和必要条件，不夸大实际影响。]
+
+## Proof of Concept
+
+**Test File:** `[path/to/test/file.t.sol]`
+
+**Test Function:** `[test_function_name]`
+
+[简要说明 PoC 的执行过程，以及每一步验证的关键结果。]
+
+```solidity
+// Runnable Foundry PoC
+[完整或可独立运行的测试代码]
+```
+
+**Expected Result:**
+
+[说明测试预期结果，包括关键 revert、余额变化、状态变化及相关断言。]
+
+**Actual Result:**
+
+[说明实际测试结果，并提供测试通过记录。]
+
+## Recommendation
+
+[提供具体的修复方向，说明需要修改什么权限、状态管理或业务逻辑，以及必须保持的安全约束。]
