@@ -84,9 +84,9 @@ If the designated controller is an address for which no party has control or acc
 
 ## Proof of Concept
 
-**Test File:** `[path/to/test/file.t.sol]`
+**Test File:** `/home/jason/audit-comp-plether/packages/perps/test/perps/spec/lp/IncorrectControllerAssignment.t.sol`
 
-**Test Function:** `test_OwnerCannotCancelDepositControlledByAnotherAddress()`、test_OwnerCannotClaimDepositControlledByAnotherAddress()
+**Test Function:** `test_OwnerCannotCancelDepositControlledByAnotherAddress()`、`test_OwnerCannotClaimDepositControlledByAnotherAddress()`
 
 ```solidity
 // SPDX-License-Identifier: AGPL-3.0
@@ -294,7 +294,7 @@ The original owner should not permanently lose access to deposited assets solely
 
 **Actual Result:**
 
-[说明实际测试结果，并提供测试通过记录。]
+<img width="1394" height="110" alt="image" src="https://github.com/user-attachments/assets/1a3655a3-8f03-4fb6-9248-940ff10a3b8e" />
 
 ## Recommendation
 
