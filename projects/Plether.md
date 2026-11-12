@@ -1,29 +1,34 @@
----
-type: project-note
-project: Plether
-audit-source: immunefi
-date: 2026-11-12
-tags: [tag1, tag2]
-status: completed
----
+# Incorrect Controller Assignment Can Permanently Lock Deposit Assets
 
-## Project Brief
-Plether lets users trade and hedge the strength of the US dollar onchain. Plether Perps is a perpetual market on a dollar index built from a basket of six major currencies: EUR, JPY, GBP, CAD, SEK and CHF. Traders open LONG USD positions, 
-which gain when the dollar strengthens against the basket, or SHORT USD positions, which gain when it weakens. Margin and settlement are in USDG, and orders are priced by Pyth through a delayed-order model.
+**Severity:** Medium
 
-## Medium Risk Findings
+**Affected Contract:** `TrancheVault.sol`
 
-### [M-01]: 
+**Affected Location:** `/home/jason/audit-comp-plether/packages/perps/src/TrancheVault.sol`
 
-**Severity**: Medium
+## Summary
 
-**Location**: 
-`TrancheVault.sol` - `_requestDeposit()`、
-`TrancheVault.sol` - `cancelPendingDeposit()`、
-`TrancheVault.sol` - `_claimDeposit()`
+The `TrancheVault` allows an asset owner to submit an asynchronous deposit request by specifying a separate controller address. Upon submission, the owner's USDG is transferred into the vault, while the resulting deposit request and its associated claim rights are recorded under the specified controller.
 
-**Description**: 
-**Vulnerability Details**
+However, the original asset owner has no independent mechanism to cancel the request, recover the deposited assets, or claim the resulting shares. Both cancellation and deposit claims require authorization from the designated controller or its approved operators.
+
+If the depositor mistakenly specifies an incorrect controller address that is not controlled by any available party, neither the original owner nor the intended controller can access the deposit entitlement. Since the contract provides no owner-authorized recovery or controller reassignment mechanism, the deposited value may become permanently inaccessible.
+
+## Root Cause
+
+TrancheVault accepts deposit assets from an owner while assigning the resulting deposit request exclusively to the supplied controller.
+
+Subsequent request cancellation and deposit claims are authorized based on the controller address and its approved operators. The original asset owner has no independent authorization path to cancel the request, claim the resulting shares, or change the controller associated with the request.
+
+## Preconditions
+
+ - A depositor submits a deposit request with a controller address different from the intended controller.
+
+ - The depositor does not control the specified controller and cannot obtain its cooperation.
+
+ - No authorized operator or alternative recovery mechanism is available.
+
+## Vulnerability Details
 
 If a depositor supplies an unintended controller address, the deposit request is permanently associated with that address.
 
@@ -33,14 +38,8 @@ If the specified address is not controlled by any available party, the deposited
 
 If the address is controlled by another party, that party may obtain the ability to claim the shares despite not having supplied the original deposit assets.
 
-**Preconditions**
 
- - A depositor submits a deposit request with a controller address different from the intended controller.
-
- - The depositor does not control the specified controller and cannot obtain its cooperation.
-
- - No authorized operator or alternative recovery mechanism is available.
-
+**Affected Code:**
 
 ```solidity
 // Vulnerable
@@ -55,9 +54,7 @@ If the address is controlled by another party, that party may obtain the ability
         if (receiver == address(0)) {
             revert TrancheVault__ZeroAddress();
         }
-```
-```solidity
-// Vulnerable
+
 function cancelPendingDeposit(
         uint256 requestId,
         address receiver,
@@ -70,13 +67,27 @@ function cancelPendingDeposit(
         }
 ```
 
-**Impact**: [后果]
+## Impact
 
-**Root Cause**: TrancheVault accepts deposit assets from an owner while assigning the resulting deposit request exclusively to the supplied controller.
+A depositor may permanently lose access to the value of their deposited USDG if an incorrect and unavailable controller address is specified when submitting a deposit request.
 
-Subsequent request cancellation and deposit claims are authorized based on the controller address and its approved operators. The original asset owner has no independent authorization path to cancel the request, claim the resulting shares, or change the controller associated with the request.
+The deposited assets are transferred into the `TrancheVault` immediately, but all subsequent cancellation and claim operations are controlled by the designated controller.
 
-**My POC Walkthrough**：[我的POC思路]
+As a result:
+
+- The original asset owner cannot cancel the pending deposit request.
+- The original asset owner cannot claim the shares after the deposit becomes claimable.
+- The intended controller cannot claim the deposit because the request is associated with a different address.
+- No owner-authorized recovery or controller reassignment mechanism is available.
+
+If the designated controller is an address for which no party has control or access, the deposit entitlement may remain inaccessible indefinitely, resulting in a permanent loss of access to the deposited value.
+
+## Proof of Concept
+
+**Test File:** `[path/to/test/file.t.sol]`
+
+**Test Function:** `test_OwnerCannotCancelDepositControlledByAnotherAddress()`、test_OwnerCannotClaimDepositControlledByAnotherAddress()
+
 ```solidity
 // SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.35;
@@ -271,11 +282,24 @@ contract InputWrongControllerAddress is BasePerpTest {
 
 ```
 
-**Recommendation**: 
+**Expected Result:**
+
+The original asset owner should retain a recovery path when a deposit request is associated with an incorrect or unavailable controller.
+
+At a minimum, the protocol should provide a secure mechanism that allows the original owner to cancel an unclaimed deposit request or reassign its controller, subject to appropriate state and accounting restrictions.
+
+If the request has already been finalized, the recovery mechanism should preserve the original deposit entitlement and prevent duplicate claims or unauthorized transfers.
+
+The original owner should not permanently lose access to deposited assets solely because an incorrect controller address was supplied when submitting the request.
+
+**Actual Result:**
+
+[说明实际测试结果，并提供测试通过记录。]
+
+## Recommendation
+
 Introduce an owner-authorized recovery mechanism for unclaimed deposit requests, allowing the original deposit owner to cancel or reassign a request when the designated controller is incorrect or unavailable.
 
 Any reassignment mechanism must atomically update all controller-indexed request records, queue states, and pending or claimable accounting to prevent duplicate claims or inconsistent state.
 
 Alternatively, require explicit controller acceptance before permanently associating a deposit request with the designated controller. Until acceptance, the original owner should retain the ability to cancel or update the request.
-
-**English Takeaway**: [1句英文总结]
