@@ -294,7 +294,7 @@ The original owner should not permanently lose access to deposited assets solely
 
 **Actual Result:**
 
-<img width="1394" height="110" alt="image" src="https://github.com/user-attachments/assets/1a3655a3-8f03-4fb6-9248-940ff10a3b8e" />
+<img width="1390" height="141" alt="image" src="https://github.com/user-attachments/assets/42a26039-66c6-4d05-a4ab-094fd2f91617" />
 
 ## Recommendation
 
