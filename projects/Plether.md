@@ -18,8 +18,8 @@ which gain when the dollar strengthens against the basket, or SHORT USD position
 **Severity**: Medium
 
 **Location**: 
-`TrancheVault.sol` - `_requestDeposit()`
-`TrancheVault.sol` - `cancelPendingDeposit()`
+`TrancheVault.sol` - `_requestDeposit()`、
+`TrancheVault.sol` - `cancelPendingDeposit()`、
 `TrancheVault.sol` - `_claimDeposit()`
 
 **Description**: 
