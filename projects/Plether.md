@@ -8,36 +8,34 @@
 
 ## Summary
 
-The `TrancheVault` allows an asset owner to submit an asynchronous deposit request by specifying a separate controller address. Upon submission, the owner's USDG is transferred into the vault, while the resulting deposit request and its associated claim rights are recorded under the specified controller.
+The `TrancheVault` allows an asset owner or an owner-authorized operator to submit an asynchronous deposit request with a separately specified controller address.
 
-However, the original asset owner has no independent mechanism to cancel the request, recover the deposited assets, or claim the resulting shares. Both cancellation and deposit claims require authorization from the designated controller or its approved operators.
+Upon submission, the owner's USDG is transferred into the vault, while the request and its claim rights are assigned exclusively to the specified controller.
 
-If the depositor mistakenly specifies an incorrect controller address that is not controlled by any available party, neither the original owner nor the intended controller can access the deposit entitlement. Since the contract provides no owner-authorized recovery or controller reassignment mechanism, the deposited value may become permanently inaccessible.
+However, the original asset owner has no independent mechanism to cancel the request, claim the resulting shares, or reassign its controller. Revoking an operator's authorization also does not affect requests already created by that operator.
+
+If an incorrect controller is assigned and is unavailable or uncontrolled, the original owner may permanently lose access to the deposit entitlement.
 
 ## Root Cause
 
-TrancheVault accepts deposit assets from an owner while assigning the resulting deposit request exclusively to the supplied controller.
+The deposit request is indexed by the specified controller rather than the original asset owner. Both cancellation and claiming require authorization from that controller or its approved operators.
 
-Subsequent request cancellation and deposit claims are authorized based on the controller address and its approved operators. The original asset owner has no independent authorization path to cancel the request, claim the resulting shares, or change the controller associated with the request.
+Although the owner can revoke an authorized deposit operator, this only prevents future operator actions. It does not restore the owner's control over requests already created or provide an owner-authorized recovery mechanism.
 
 ## Preconditions
-
- - A depositor submits a deposit request with a controller address different from the intended controller.
-
- - The depositor does not control the specified controller and cannot obtain its cooperation.
-
- - No authorized operator or alternative recovery mechanism is available.
+ - A deposit request is assigned to an unintended controller, either directly by the owner or by an owner-authorized operator.
+ - The original owner does not control the assigned controller and cannot obtain its cooperation.
+ - No available controller operator or alternative recovery mechanism can access the deposit entitlement.
 
 ## Vulnerability Details
 
-If a depositor supplies an unintended controller address, the deposit request is permanently associated with that address.
+When `requestDeposit(assets, controller, owner)` is called, the assets are transferred from `owner` into `TrancheVault`, while the request is recorded under `controller`.
 
-The intended controller and the original asset owner cannot claim the resulting shares. The request can only be managed and claimed by the mistakenly specified controller or its authorized operators.
+The original owner cannot cancel the request because `cancelPendingDeposit()` requires controller authorization. After epoch finalization, `_claimDeposit()` applies the same controller-based authorization, preventing the owner from claiming the resulting shares.
 
-If the specified address is not controlled by any available party, the deposited value may become permanently inaccessible because the contract provides no owner recovery or controller migration mechanism.
+Revoking an owner-authorized operator does not change the controller assigned to an existing request. Consequently, neither the original owner nor the intended controller can recover the deposit entitlement through the available request-management and claim mechanisms.
 
-If the address is controlled by another party, that party may obtain the ability to claim the shares despite not having supplied the original deposit assets.
-
+The incorrectly assigned controller, however, can claim the resulting shares.
 
 **Affected Code:**
 
@@ -67,15 +65,11 @@ If the address is controlled by another party, that party may obtain the ability
 
 ## Impact
 
-An incorrectly assigned controller can permanently deprive the original depositor and the intended controller of access to the deposit entitlement.
+The original asset owner and intended controller may permanently lose access to the deposit entitlement when the assigned controller is unavailable or uncontrolled.
 
-The original owner cannot cancel the pending request or claim the resulting shares after finalization. The intended controller is also unable to claim because the request is indexed under the incorrectly supplied controller address.
+If the assigned controller is controlled by another party, that party may claim the resulting shares despite not providing the original deposit assets.
 
-If the incorrectly assigned controller is not controlled by any available party, the deposit entitlement may remain inaccessible indefinitely, as the contract provides no owner-authorized recovery or controller reassignment mechanism.
-
-If the incorrectly assigned controller is controlled by another party, that party may claim the resulting shares despite not being the original asset provider.
-
-The impact is therefore the loss of access to the deposit entitlement, potentially resulting in permanent fund freezing under the stated preconditions.
+This can result in permanent inaccessibility of deposited value under the stated preconditions.
 
 ## Proof of Concept
 
@@ -346,8 +340,8 @@ Ran 1 test suite in 96.82ms (38.16ms CPU time): 2 tests passed, 0 failed, 0 skip
 
 ## Recommendation
 
-Introduce an owner-authorized recovery mechanism for unclaimed deposit requests, allowing the original asset owner to cancel or reassign a request when the designated controller is incorrect or unavailable.
+Introduce an owner-authorized recovery mechanism allowing the original asset owner to cancel or reassign deposit requests when the designated controller is incorrect or unavailable, including requests submitted by authorized operators.
 
-Any recovery or reassignment mechanism should atomically update all controller-indexed request records, queue states, and pending or claimable accounting to prevent duplicate claims or inconsistent state.
+The mechanism should safely update controller-indexed request records, queue states, and pending or claimable accounting to prevent duplicate claims or inconsistent state.
 
-Alternatively, require explicit controller acceptance before permanently associating a deposit request with the designated controller. Until acceptance, the original owner should retain the ability to cancel or update the request.
+Alternatively, require controller acceptance before permanently associating a request with the designated controller, while preserving the owner's ability to cancel or update unaccepted requests.
