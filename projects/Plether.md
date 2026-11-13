@@ -41,24 +41,30 @@ The incorrectly assigned controller, however, can claim the resulting shares.
 
 ```solidity
 // Relevant code excerpts
-    function _requestDeposit()
+    function _requestDeposit(uint256 assets, address controller, address owner)
             IERC20(asset()).safeTransferFrom(owner, address(this), assets);
             DepositPosition storage position =
                 depositRequests[controller][requestId];
 
-    function _claimDeposit()
+    function _claimDeposit(uint256 requestId, uint256 assets, address receiver, address controller)
             _requireControllerAuth(controller);
             _requireShareReceiver(controller, receiver);
-            }
 
-    function cancelPendingDeposit()
+    function cancelPendingDepositt(uint256 requestId, address receiver, address controller)
             _requireControllerAuth(controller);
 
-    function _requireControllerAuth(
-        address controller
-    ) internal view {
+    function _requireControllerAuth(address controller)
+        internal view {
         if (msg.sender != controller && !isOperator[controller][msg.sender]) {
             revert TrancheVault__NotControllerOrOperator();
+        }
+    }
+
+    function _requireShareReceiver(address controller, address receiver)
+        internal pure {
+        // Keep share delivery independent of receiver balances and require the controller's authority over cooldowns.
+        if (receiver != controller) {
+            revert TrancheVault__ReceiverNotController();
         }
     }
 ```
