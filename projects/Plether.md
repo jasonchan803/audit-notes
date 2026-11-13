@@ -8,9 +8,9 @@
 
 ## Summary
 
-The `TrancheVault` allows an asset owner or an owner-authorized operator to submit an asynchronous deposit request with a separately specified controller address.
+The `TrancheVault` allows an asset owner, or an operator authorized by the owner, to submit an asynchronous deposit request with a separately specified controller address.
 
-Upon submission, the owner's USDG is transferred into the vault, while the request and its claim rights are assigned exclusively to the specified controller.
+Upon submission, the owner's USDG is transferred into the vault, while the resulting deposit request and its associated claim rights are recorded under the specified controller.
 
 However, the original asset owner has no independent mechanism to cancel the request, claim the resulting shares, or reassign its controller. Revoking an operator's authorization also does not affect requests already created by that operator.
 
@@ -23,9 +23,9 @@ The deposit request is indexed by the specified controller rather than the origi
 Although the owner can revoke an authorized deposit operator, this only prevents future operator actions. It does not restore the owner's control over requests already created or provide an owner-authorized recovery mechanism.
 
 ## Preconditions
- - A deposit request is assigned to an unintended controller, either directly by the owner or by an owner-authorized operator.
- - The original owner does not control the assigned controller and cannot obtain its cooperation.
- - No available controller operator or alternative recovery mechanism can access the deposit entitlement.
+- A deposit request is assigned to an unintended controller, either directly by the asset owner or by an operator authorized by the owner.
+- The original owner does not control the assigned controller and cannot obtain its cooperation.
+- No authorized operator of the assigned controller or alternative recovery mechanism is available.
 
 ## Vulnerability Details
 
@@ -145,7 +145,7 @@ contract IncorrectControllerAssignment is BasePerpTest {
         vm.prank(bob);
         settlementToken.approve(address(juniorVault), 100_000e6);
 
-        // alice submits a deposit request for bob, assigning it to wrongController.
+        // eva submits a deposit request for bob, assigning it to wrongController.
         vm.prank(eva);
         uint256 requestId = juniorVault.requestDeposit(
             100_000e6,
@@ -167,7 +167,7 @@ contract IncorrectControllerAssignment is BasePerpTest {
         juniorVault.setOperator(eva, false);
 
         // Verify eva's operator permission is revoked.
-        assertFalse(juniorVault.isOperator(bob, alice));
+        assertFalse(juniorVault.isOperator(bob, eva));
 
         // Verify the request remains assigned to wrongController.
         assertEq(
@@ -322,9 +322,7 @@ contract IncorrectControllerAssignment is BasePerpTest {
             juniorVault.claimableDepositRequest(requestId, wrongController),
             0
         );
-        
     }
-
 }
 ```
 
