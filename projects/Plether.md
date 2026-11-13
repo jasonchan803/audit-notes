@@ -42,19 +42,27 @@ If the address is controlled by another party, that party may obtain the ability
 **Affected Code:**
 
 ```solidity
-// Vulnerable
-function _requestDeposit()
-        IERC20(asset()).safeTransferFrom(owner, address(this), assets);
-        DepositPosition storage position =
-            depositRequests[controller][requestId];
+// Relevant code excerpts
+    function _requestDeposit()
+            IERC20(asset()).safeTransferFrom(owner, address(this), assets);
+            DepositPosition storage position =
+                depositRequests[controller][requestId];
 
-function _claimDeposit()
-        _requireControllerAuth(controller);
-        _requireShareReceiver(controller, receiver);
+    function _claimDeposit()
+            _requireControllerAuth(controller);
+            _requireShareReceiver(controller, receiver);
+            }
+
+    function cancelPendingDeposit()
+            _requireControllerAuth(controller);
+
+    function _requireControllerAuth(
+        address controller
+    ) internal view {
+        if (msg.sender != controller && !isOperator[controller][msg.sender]) {
+            revert TrancheVault__NotControllerOrOperator();
         }
-
-function cancelPendingDeposit()
-        _requireControllerAuth(controller);
+    }
 ```
 
 ## Impact
@@ -74,7 +82,7 @@ The impact is therefore the loss of access to the deposit entitlement, potential
 **Test File:** `packages/perps/test/perps/spec/lp/IncorrectControllerAssignment.t.sol`
 
 **Test Function:**
- - `test_OwnerCannotCancelDepositControlledByAnotherAddress()`
+ - `test_RevokingOperatorDoesNotRestoreOwnerControl()`
  - `test_OwnerCannotClaimDepositControlledByAnotherAddress()`
 
 **Run:**
@@ -90,46 +98,66 @@ The impact is therefore the loss of access to the deposit entitlement, potential
 pragma solidity ^0.8.35;
 
 import {BasePerpTest} from "../../BasePerpTest.sol";
-import {CooldownBypassReceiver, TrancheCooldownBypassReceiver} from "../../support/BehaviorScenarioHelpers.sol";
-import {CfdTypes} from "@plether/perps/CfdTypes.sol";
 import {TrancheVault} from "@plether/perps/TrancheVault.sol";
 
+error TrancheVault__NotControllerOrOperator();
 error ERC4626ExceededMaxDeposit(address receiver, uint256 assets, uint256 max);
+
 contract IncorrectControllerAssignment is BasePerpTest {
 
     address bob = address(0xB0B);
+    address eva = address(0xA0A);
     address alice = address(0xA11CE);
     address wrongController = address(0xA12CE);
 
 
-    /// @notice Verifies that the original asset owner cannot cancel a pending
-    ///         deposit request assigned to a different controller.
+    /// @notice Verifies that revoking an authorized deposit operator does not
+    ///         restore the original asset owner's control over a deposit request
+    ///         assigned to a different controller.
     /// @dev The test demonstrates that:
-    ///      1. Bob submits a deposit request and transfers USDG into the vault.
-    ///      2. The deposit assets are held by the vault and the request is
-    ///         associated with `wrongController`.
-    ///      3. Bob, as the original asset owner, attempts to cancel the request
-    ///         but the call reverts because he is not the controller or its operator.
-    ///      4. The deposit request remains pending and the escrowed assets
-    ///         cannot be recovered by Bob through the cancellation mechanism.
+    ///      1. bob authorizes eva as an operator.
+    ///      2. eva uses her operator permission to submit a deposit request
+    ///         on behalf of bob, assigning it to wrongController.
+    ///      3. bob's USDG is transferred into the vault and escrowed under
+    ///         the request associated with wrongController.
+    ///      4. bob revokes eva's operator permission after the request is created.
+    ///      5. Revoking eva's permission does not change the request's controller
+    ///         or restore bob's ability to manage the request.
+    ///      6. bob cannot cancel the pending request because he is neither
+    ///         its controller nor an authorized operator of that controller.
+    ///      7. After the LP epoch is finalized, the deposit entitlement remains
+    ///         associated with wrongController.
+    ///      8. bob cannot claim the finalized deposit entitlement.
+    ///
+    ///      This demonstrates that revoking an authorized deposit operator
+    ///      only prevents future operator actions and does not provide the
+    ///      original asset owner with a recovery mechanism for requests
+    ///      already assigned to another controller.
     function _initialJuniorDeposit() internal pure override returns (uint256) {
         return 0;
     }
 
-    function test_OwnerCannotCancelDepositControlledByAnotherAddress() public {
+    function test_RevokingOperatorDoesNotRestoreOwnerControl() public {
+        // bob funds the deposit.
         settlementToken.mint(bob, 100_000e6);
+
+        // bob authorizes eva as an operator.
+        vm.prank(bob);
+        juniorVault.setOperator(eva, true);
+
         uint256 bobBefore = settlementToken.balanceOf(bob);
         uint256 vaultBefore = settlementToken.balanceOf(address(juniorVault));
 
-        vm.startPrank(bob);
+        vm.prank(bob);
         settlementToken.approve(address(juniorVault), 100_000e6);
 
+        // alice submits a deposit request for bob, assigning it to wrongController.
+        vm.prank(eva);
         uint256 requestId = juniorVault.requestDeposit(
             100_000e6,
             wrongController,
             bob
         );
-        vm.stopPrank();
 
         assertEq(
             settlementToken.balanceOf(bob),
@@ -140,21 +168,28 @@ contract IncorrectControllerAssignment is BasePerpTest {
             vaultBefore + 100_000e6
         );
 
-        // Request has been submitted and assets are already escrowed.
-        vm.expectRevert();
+        // bob revokes eva's operator permission.
+        vm.prank(bob);
+        juniorVault.setOperator(eva, false);
+
+        // Verify eva's operator permission is revoked.
+        assertFalse(juniorVault.isOperator(bob, alice));
+
+        // Verify the request remains assigned to wrongController.
+        assertEq(
+            juniorVault.pendingDepositRequest(requestId, wrongController),
+            100_000e6
+        );
+
+        // bob still cannot cancel the request.
+        vm.expectRevert(TrancheVault__NotControllerOrOperator.selector);
         vm.prank(bob);
         juniorVault.cancelPendingDeposit(
             requestId,
             bob,
             wrongController
         );
-
-        // The deposit request remains pending.
-        assertEq(
-            juniorVault.pendingDepositRequest(requestId, wrongController),
-            100_000e6
-        );
-
+    
         // Then settle the epoch.
         vm.warp(juniorVault.depositEpochStart(requestId));
         vm.prank(address(router));
@@ -166,7 +201,14 @@ contract IncorrectControllerAssignment is BasePerpTest {
             100_000e6
         );
 
-        vm.expectRevert();
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                ERC4626ExceededMaxDeposit.selector,
+                bob,                  // receiver
+                100000000000,         // assets (1e11)
+                0                     // max
+            )
+        );
         vm.prank(bob);
         juniorVault.claimDeposit(
             requestId,
@@ -176,26 +218,29 @@ contract IncorrectControllerAssignment is BasePerpTest {
         );
     }
 
-    /// @notice Verifies that the original asset owner cannot claim shares from
-    ///         a finalized deposit request assigned to a different controller.
+    /// @notice Verifies that only the controller assigned to a deposit request
+    ///         can claim the resulting deposit shares.
     /// @dev The test demonstrates that:
-    ///      1. Bob submits a deposit request and transfers USDG into the vault.
-    ///      2. The LP epoch is finalized and the request becomes claimable
-    ///         for `wrongController`.
-    ///      3. Bob, as the original asset owner, attempts to claim the deposit
-    ///         but the call reverts.
-    ///      4. The intended controller (Alice) also cannot claim the deposit
-    ///         because the request is associated with `wrongController`.
-    ///      5. `wrongController` successfully claims the deposit shares.
-    ///      6. The resulting shares are credited to `wrongController`, while
-    ///         Bob receives no shares.
-    ///      7. The claimable deposit balance is fully consumed.
+    ///      1. bob submits a deposit request and transfers USDG into the vault,
+    ///         specifying wrongController as the request controller.
+    ///      2. The LP epoch is finalized and the deposit entitlement becomes
+    ///         claimable under wrongController.
+    ///      3. alice, the intended controller, cannot claim the deposit because
+    ///         the request is not associated with her address.
+    ///      4. bob, the original asset owner, also cannot claim the deposit
+    ///         because the request is not associated with his address.
+    ///      5. wrongController successfully claims the resulting deposit shares.
+    ///      6. The shares are credited to wrongController, while bob and alice
+    ///         receive no shares.
+    ///      7. The claimable deposit entitlement associated with wrongController
+    ///         is fully consumed.
     ///
-    ///      This demonstrates that deposit ownership and claim authorization
-    ///      are determined by the specified controller rather than the
-    ///      original asset owner. If the specified controller is unavailable
-    ///      or uncontrolled, the original owner has no independent recovery
-    ///      path through the deposit claim mechanism.
+    ///      This demonstrates that deposit claim rights are determined by the
+    ///      controller specified when the request is submitted, rather than
+    ///      by the original asset owner or the intended controller.
+    ///      If the assigned controller is unavailable or uncontrolled,
+    ///      the original asset owner has no independent recovery path through
+    ///      the deposit claim mechanism.
     function test_OwnerCannotClaimDepositControlledByAnotherAddress() public {
         settlementToken.mint(bob, 100_000e6);
         vm.startPrank(bob);
@@ -225,7 +270,7 @@ contract IncorrectControllerAssignment is BasePerpTest {
                 0                     // max
             )
         );
-        // Alice: intended controller cannot claim.
+        // alice: intended controller cannot claim.
         vm.prank(alice);
         juniorVault.claimDeposit(
             requestId, 
@@ -241,7 +286,7 @@ contract IncorrectControllerAssignment is BasePerpTest {
                 0                     // max
             )
         );
-        // Bob: asset owner cannot claim either.
+        // bob: asset owner cannot claim either.
         vm.prank(bob);
         juniorVault.claimDeposit(
             requestId, 
@@ -292,9 +337,11 @@ contract IncorrectControllerAssignment is BasePerpTest {
 **Test Result:**
 ```solidity
 Ran 2 tests for test/perps/spec/lp/IncorrectControllerAssignment.t.sol:IncorrectControllerAssignment
-[PASS] test_OwnerCannotCancelDepositControlledByAnotherAddress() (gas: 821180)
 [PASS] test_OwnerCannotClaimDepositControlledByAnotherAddress() (gas: 904244)
-Suite result: ok. 2 passed; 0 failed; 0 skipped; finished in 8.00ms (2.11ms CPU time)
+[PASS] test_RevokingOperatorDoesNotRestoreOwnerControl() (gas: 842680)
+Suite result: ok. 2 passed; 0 failed; 0 skipped; finished in 38.16ms (8.70ms CPU time)
+
+Ran 1 test suite in 96.82ms (38.16ms CPU time): 2 tests passed, 0 failed, 0 skipped (2 total tests)
 ```
 
 ## Recommendation
@@ -302,7 +349,5 @@ Suite result: ok. 2 passed; 0 failed; 0 skipped; finished in 8.00ms (2.11ms CPU 
 Introduce an owner-authorized recovery mechanism for unclaimed deposit requests, allowing the original asset owner to cancel or reassign a request when the designated controller is incorrect or unavailable.
 
 Any recovery or reassignment mechanism should atomically update all controller-indexed request records, queue states, and pending or claimable accounting to prevent duplicate claims or inconsistent state.
-
-Alternatively, require explicit controller acceptance before permanently associating a deposit request with the designated controller. Until acceptance, the original owner should retain the ability to cancel or update the request.
 
 Alternatively, require explicit controller acceptance before permanently associating a deposit request with the designated controller. Until acceptance, the original owner should retain the ability to cancel or update the request.
