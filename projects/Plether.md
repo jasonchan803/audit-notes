@@ -71,9 +71,11 @@ The impact is therefore the loss of access to the deposit entitlement, potential
 
 ## Proof of Concept
 
-**Test File:** `/home/jason/audit-comp-plether/packages/perps/test/perps/spec/lp/IncorrectControllerAssignment.t.sol`
+**Test File:** `packages/perps/test/perps/spec/lp/IncorrectControllerAssignment.t.sol`
 
-**Test Function:** `test_OwnerCannotCancelDepositControlledByAnotherAddress()`、`test_OwnerCannotClaimDepositControlledByAnotherAddress()`
+**Test Function:**
+ - `test_OwnerCannotCancelDepositControlledByAnotherAddress()`
+ - `test_OwnerCannotClaimDepositControlledByAnotherAddress()`
 
 **Run:**
 
