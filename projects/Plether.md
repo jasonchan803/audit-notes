@@ -76,8 +76,11 @@ The impact is therefore the loss of access to the deposit entitlement, potential
 **Test Function:** `test_OwnerCannotCancelDepositControlledByAnotherAddress()`、`test_OwnerCannotClaimDepositControlledByAnotherAddress()`
 
 **Run:**
+
 `git checkout a82d4fefb02768e5b3bddcc97dee371eee24fea8`
+
 `cd packages/perps`
+
 `forge test --match-path test/perps/spec/lp/IncorrectControllerAssignment.t.sol -vvv`
 
 ```solidity
