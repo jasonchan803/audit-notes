@@ -1,10 +1,10 @@
-# Incorrect Controller Assignment Can Permanently Lock Deposit Assets
+# Incorrect Controller Assignment Can Make Deposit Entitlements Inaccessible to the Original Owner
 
 **Severity:** Medium
 
 **Affected Contract:** `TrancheVault.sol`
 
-**Affected Location:** `/home/jason/audit-comp-plether/packages/perps/src/TrancheVault.sol`
+**Affected Location:** `packages/perps/src/TrancheVault.sol`
 
 ## Summary
 
@@ -43,50 +43,42 @@ If the address is controlled by another party, that party may obtain the ability
 
 ```solidity
 // Vulnerable
- function _claimDeposit(
-        uint256 requestId,
-        uint256 assets,
-        address receiver,
-        address controller
-    ) internal returns (uint256 shares) {
-        // Only controller can claim the shares
+function _requestDeposit()
+        IERC20(asset()).safeTransferFrom(owner, address(this), assets);
+        DepositPosition storage position =
+            depositRequests[controller][requestId];
+
+function _claimDeposit()
         _requireControllerAuth(controller);
-        if (receiver == address(0)) {
-            revert TrancheVault__ZeroAddress();
+        _requireShareReceiver(controller, receiver);
         }
 
-function cancelPendingDeposit(
-        uint256 requestId,
-        address receiver,
-        address controller
-    ) public returns (uint256 assets) {
-        // Only controller can cancel the request
+function cancelPendingDeposit()
         _requireControllerAuth(controller);
-        if (receiver == address(0)) {
-            revert TrancheVault__ZeroAddress();
-        }
 ```
 
 ## Impact
 
-A depositor may permanently lose access to the value of their deposited USDG if an incorrect and unavailable controller address is specified when submitting a deposit request.
+An incorrectly assigned controller can permanently deprive the original depositor and the intended controller of access to the deposit entitlement.
 
-The deposited assets are transferred into the `TrancheVault` immediately, but all subsequent cancellation and claim operations are controlled by the designated controller.
+The original owner cannot cancel the pending request or claim the resulting shares after finalization. The intended controller is also unable to claim because the request is indexed under the incorrectly supplied controller address.
 
-As a result:
+If the incorrectly assigned controller is not controlled by any available party, the deposit entitlement may remain inaccessible indefinitely, as the contract provides no owner-authorized recovery or controller reassignment mechanism.
 
-- The original asset owner cannot cancel the pending deposit request.
-- The original asset owner cannot claim the shares after the deposit becomes claimable.
-- The intended controller cannot claim the deposit because the request is associated with a different address.
-- No owner-authorized recovery or controller reassignment mechanism is available.
+If the incorrectly assigned controller is controlled by another party, that party may claim the resulting shares despite not being the original asset provider.
 
-If the designated controller is an address for which no party has control or access, the deposit entitlement may remain inaccessible indefinitely, resulting in a permanent loss of access to the deposited value.
+The impact is therefore the loss of access to the deposit entitlement, potentially resulting in permanent fund freezing under the stated preconditions.
 
 ## Proof of Concept
 
 **Test File:** `/home/jason/audit-comp-plether/packages/perps/test/perps/spec/lp/IncorrectControllerAssignment.t.sol`
 
 **Test Function:** `test_OwnerCannotCancelDepositControlledByAnotherAddress()`、`test_OwnerCannotClaimDepositControlledByAnotherAddress()`
+
+**Run:**
+`git checkout a82d4fefb02768e5b3bddcc97dee371eee24fea8`
+`cd packages/perps`
+`forge test --match-path test/perps/spec/lp/IncorrectControllerAssignment.t.sol -vvv`
 
 ```solidity
 // SPDX-License-Identifier: AGPL-3.0
@@ -98,7 +90,7 @@ import {CfdTypes} from "@plether/perps/CfdTypes.sol";
 import {TrancheVault} from "@plether/perps/TrancheVault.sol";
 
 error ERC4626ExceededMaxDeposit(address receiver, uint256 assets, uint256 max);
-contract InputWrongControllerAddress is BasePerpTest {
+contract IncorrectControllerAssignment is BasePerpTest {
 
     address bob = address(0xB0B);
     address alice = address(0xA11CE);
@@ -152,6 +144,12 @@ contract InputWrongControllerAddress is BasePerpTest {
             wrongController
         );
 
+        // The deposit request remains pending.
+        assertEq(
+            juniorVault.pendingDepositRequest(requestId, wrongController),
+            100_000e6
+        );
+
         // Then settle the epoch.
         vm.warp(juniorVault.depositEpochStart(requestId));
         vm.prank(address(router));
@@ -172,7 +170,7 @@ contract InputWrongControllerAddress is BasePerpTest {
             bob
         );
     }
-    
+
     /// @notice Verifies that the original asset owner cannot claim shares from
     ///         a finalized deposit request assigned to a different controller.
     /// @dev The test demonstrates that:
@@ -217,7 +215,7 @@ contract InputWrongControllerAddress is BasePerpTest {
         vm.expectRevert(
             abi.encodeWithSelector(
                 ERC4626ExceededMaxDeposit.selector,
-                address(0xA11cE),     // receiver
+                alice,                // receiver
                 100000000000,         // assets (1e11)
                 0                     // max
             )
@@ -233,7 +231,7 @@ contract InputWrongControllerAddress is BasePerpTest {
         vm.expectRevert(
             abi.encodeWithSelector(
                 ERC4626ExceededMaxDeposit.selector,
-                address(0xB0B),     // receiver
+                bob,                  // receiver
                 100000000000,         // assets (1e11)
                 0                     // max
             )
@@ -247,8 +245,8 @@ contract InputWrongControllerAddress is BasePerpTest {
             bob);
 
         uint256 bobSharesBefore = juniorVault.balanceOf(bob);
+        uint256 aliceSharesBefore = juniorVault.balanceOf(alice);
         uint256 controllerSharesBefore = juniorVault.balanceOf(wrongController);
-        uint256 controllerAssetsBefore = settlementToken.balanceOf(wrongController);
 
         // Wrong controller: the request's actual controller can claim.
         vm.prank(wrongController);
@@ -272,6 +270,11 @@ contract InputWrongControllerAddress is BasePerpTest {
         );
 
         assertEq(
+            juniorVault.balanceOf(alice),
+            aliceSharesBefore
+        );
+
+        assertEq(
             juniorVault.claimableDepositRequest(requestId, wrongController),
             0
         );
@@ -279,18 +282,7 @@ contract InputWrongControllerAddress is BasePerpTest {
     }
 
 }
-
 ```
-
-**Expected Result:**
-
-The original asset owner should retain a recovery path when a deposit request is associated with an incorrect or unavailable controller.
-
-At a minimum, the protocol should provide a secure mechanism that allows the original owner to cancel an unclaimed deposit request or reassign its controller, subject to appropriate state and accounting restrictions.
-
-If the request has already been finalized, the recovery mechanism should preserve the original deposit entitlement and prevent duplicate claims or unauthorized transfers.
-
-The original owner should not permanently lose access to deposited assets solely because an incorrect controller address was supplied when submitting the request.
 
 **Actual Result:**
 
@@ -298,8 +290,10 @@ The original owner should not permanently lose access to deposited assets solely
 
 ## Recommendation
 
-Introduce an owner-authorized recovery mechanism for unclaimed deposit requests, allowing the original deposit owner to cancel or reassign a request when the designated controller is incorrect or unavailable.
+Introduce an owner-authorized recovery mechanism for unclaimed deposit requests, allowing the original asset owner to cancel or reassign a request when the designated controller is incorrect or unavailable.
 
-Any reassignment mechanism must atomically update all controller-indexed request records, queue states, and pending or claimable accounting to prevent duplicate claims or inconsistent state.
+Any recovery or reassignment mechanism should atomically update all controller-indexed request records, queue states, and pending or claimable accounting to prevent duplicate claims or inconsistent state.
+
+Alternatively, require explicit controller acceptance before permanently associating a deposit request with the designated controller. Until acceptance, the original owner should retain the ability to cancel or update the request.
 
 Alternatively, require explicit controller acceptance before permanently associating a deposit request with the designated controller. Until acceptance, the original owner should retain the ability to cancel or update the request.
