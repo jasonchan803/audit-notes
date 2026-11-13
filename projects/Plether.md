@@ -289,9 +289,13 @@ contract IncorrectControllerAssignment is BasePerpTest {
 }
 ```
 
-**Actual Result:**
-
-<img width="1390" height="141" alt="image" src="https://github.com/user-attachments/assets/42a26039-66c6-4d05-a4ab-094fd2f91617" />
+**Test Result:**
+```solidity
+Ran 2 tests for test/perps/spec/lp/IncorrectControllerAssignment.t.sol:IncorrectControllerAssignment
+[PASS] test_OwnerCannotCancelDepositControlledByAnotherAddress() (gas: 821180)
+[PASS] test_OwnerCannotClaimDepositControlledByAnotherAddress() (gas: 904244)
+Suite result: ok. 2 passed; 0 failed; 0 skipped; finished in 8.00ms (2.11ms CPU time)
+```
 
 ## Recommendation
 
