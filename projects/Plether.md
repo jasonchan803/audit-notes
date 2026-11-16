@@ -350,5 +350,5 @@ The mechanism should safely update controller-indexed request records, queue sta
 
 Alternatively, require controller acceptance before permanently associating a request with the designated controller, while preserving the owner's ability to cancel or update unaccepted requests.
 
-##This submission was closed by Immunefi. 
+## This submission was closed by Immunefi. 
 The lesson learned: Incorrect user input leading to self-inflicted fund lock is not a valid vulnerability, but a feature request. Need to focus on unprivileged attacker vectors.
