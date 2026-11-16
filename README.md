@@ -29,9 +29,10 @@ My personal notes for smart contract audit learning.
 - 2026-09-08: finished low risk findings in Yield project-notes.
 - 2026-10-16：finished Folks Finance: Staking Contracts project-notes.
 - 2026-10-22：finished Incomplete-Event-Emission-Breaks-Off-Chain-Tracking knowledage-note.
+- 2026-11-16：finished Audit Competition | Plether project-notes.
 
 
-## Total numbers of notes：13
+## Total numbers of notes：15
 ## Current stage：Second stage(Simple logic vulnerabilities)
 
 
